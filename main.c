@@ -1,11 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 /*      lua       */
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+
+LUAMOD_API int luaopen_extra (lua_State *L);
+extern int getTickCount();
 
 static int running = 1;
 
@@ -47,6 +51,7 @@ setCFunctions(lua_State *luaCtx) {
 int main() {
 	lua_State *luaCtx = NULL;
 	luaCtx = luaL_newstate();
+	int targetFramesPerSecond = 30;
 
 	if (!luaCtx) {
 		printf("Error allocating lua state\n");
@@ -54,6 +59,8 @@ int main() {
 	}
 
 	luaL_openlibs(luaCtx);
+	luaL_requiref(luaCtx, "extra", luaopen_extra, 1);
+	lua_pop(luaCtx, 1);
 
 	setCFunctions(luaCtx);
 
@@ -65,17 +72,34 @@ int main() {
 	lua_getglobal(luaCtx, "Init");
 	lua_pcall(luaCtx, 0, 0, 0);
 
+	int idealCycleTime = (int)((double)1 / ((double)targetFramesPerSecond / 100.0));
+	int outstandingFreeTimeLeftThisTick = 0;
+	int pollStartTime = 0;
+	int pollDeltaTime = 0;
 	while (running) {
-		/* the goal is to call Poll 30 times per second */
+		pollStartTime = getTickCount();
 		lua_getglobal(luaCtx, "Poll");
 		if (lua_pcall(luaCtx, 0, 0, 0) != 0) {
 			const char *msg = lua_tostring(luaCtx, -1);
 			/* we don't care about the error, 
 			 * usually it's just that the function doesn't exist
 			 */
+			fprintf(stderr, "Catched an error -> %s\n", msg);
+			break;
 		}
+		pollDeltaTime = getTickCount() - pollStartTime;
 
-		usleep(3000);
+		outstandingFreeTimeLeftThisTick = idealCycleTime - pollDeltaTime;
+
+		/*
+		fprintf(stderr, "Tick remaining time : %d -- deltaTime : %d  idealCycleTime : %d\n"
+			, outstandingFreeTimeLeftThisTick
+			, pollDeltaTime
+			, idealCycleTime);
+		*/
+		if (outstandingFreeTimeLeftThisTick > 0) {
+			usleep(outstandingFreeTimeLeftThisTick * 10000);
+		}
 	}
 
 	lua_close(luaCtx);

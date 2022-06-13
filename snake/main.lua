@@ -23,10 +23,10 @@ function Apple:new(bitmapParent, positionX, positionY, o)
 	o.position = {positionX, positionY}
 	o.bitmap = Bitmap:new(4, 4)
 
-	--     
-	--  ** 
-	--  ** 
-	--     
+	--    
+	-- ** 
+	-- ** 
+	--    
 	o.bitmap.data = {
 		0x0220, 0x0110
 	}
@@ -230,23 +230,34 @@ function Snake:poll()
 end
 
 function Snake:addTail()
+	local previousLastTail
+	if self.size > 0 then
+		previousLastTail = self.tails[self.size]
+	else
+		previousLastTail = self.vector
+	end
 	self.size = self.size + 1
 
-	self.tails[self.size] = Vector:new({self.vector:getCurrentCoordinate()})
-	self.tails[self.size]:setMotion(self.vector.direction, self.vector.speed)
+	--self.tails[self.size] = Vector:new({self.vector:getCurrentCoordinate()})
+	--self.tails[self.size]:setMotion(self.vector.direction, self.vector.speed)
+	self.tails[self.size] = Vector:new({previousLastTail:getCurrentCoordinate()})
+	self.tails[self.size]:setMotion(previousLastTail.direction, previousLastTail.speed)
 end
 
 function Snake:clearDraw()
-	local x, y = self.vector:getCurrentCoordinate()
+	--local x, y = self.vector:getCurrentCoordinate()
 	--self.bitmapParent:blitReverse(self.bitmap, x, y)
 
 	local tailX, tailY = 0, 0
+	--[[
 	for i = 1, self.size do
 		tailX, tailY = self.tails[i]:getCurrentCoordinate()
 		--self.bitmapParent:blitReverse(self.bitmap, tailX, tailY)
 	end
+	--]]
 
 	if (self.size > 0) then
+		tailX, tailY = self.tails[#self.tails]:getCurrentCoordinate()
 		self.bitmapParent:blitReverse(self.bitmap, tailX, tailY)
 	end
 end
@@ -274,23 +285,31 @@ function Snake:_setTailsMotion(num, direction, speed)
 end
 
 function Snake:moveLeft()
-	self.vector:setMotion(Direction.left, self.speed)
-	self:_setTailsMotion(0, Direction.left, self.speed)
+	if self.direction ~= Direction.right then
+		self.vector:setMotion(Direction.left, self.speed)
+		self:_setTailsMotion(0, Direction.left, self.speed)
+	end
 end
 
 function Snake:moveRight()
-	self.vector:setMotion(Direction.right, self.speed)
-	self:_setTailsMotion(0, Direction.right, self.speed)
+	if self.direction ~= Direction.left then
+		self.vector:setMotion(Direction.right, self.speed)
+		self:_setTailsMotion(0, Direction.right, self.speed)
+	end
 end
 
 function Snake:moveDown()
-	self.vector:setMotion(Direction.down, self.speed)
-	self:_setTailsMotion(0, Direction.down, self.speed)
+	if self.direction ~= Direction.up then
+		self.vector:setMotion(Direction.down, self.speed)
+		self:_setTailsMotion(0, Direction.down, self.speed)
+	end
 end
 
 function Snake:moveUp()
-	self.vector:setMotion(Direction.up, self.speed)
-	self:_setTailsMotion(0, Direction.up, self.speed)
+	if self.direction ~= Direction.down then
+		self.vector:setMotion(Direction.up, self.speed)
+		self:_setTailsMotion(0, Direction.up, self.speed)
+	end
 end
 
 local gameState = {
@@ -357,7 +376,7 @@ function gameFrame(tick)
 
 	gameState.snake:poll()
 	gameState.bitmap:draw()
-	gameState.fps:poll()
+	--gameState.fps:poll()
 end
 
 function Exit()

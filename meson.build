@@ -1,5 +1,7 @@
 project('fungillus-platform', 'c')
 
+subdir('libs/')
+
 cc = meson.get_compiler('c')
 
 mDep = cc.find_library('m', required: true)
@@ -10,4 +12,4 @@ luaIncludePath = include_directories('lua')
 
 luaDep = cc.find_library('lua', dirs: luaPath, static: true)
 
-executable('runGame', ['main.c'], dependencies: [mDep, dlDep, luaDep], include_directories: luaIncludePath)
+executable('runGame', ['main.c'], customLibs, dependencies: [mDep, dlDep, luaDep], include_directories: luaIncludePath)
