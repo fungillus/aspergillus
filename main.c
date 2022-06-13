@@ -13,26 +13,6 @@ extern int getTickCount();
 
 static int running = 1;
 
-/* this is a C function being made available in lua
- * it uses a very specific protocol for lua.
- */
-static int 
-foo (lua_State *L) {
-	int n = lua_gettop(L);    /* number of arguments */
-	lua_Number sum = 0.0;
-	int i;
-	for (i = 1; i <= n; i++) {
-		if (!lua_isnumber(L, i)) {
-			lua_pushliteral(L, "incorrect argument");
-			lua_error(L);
-		}
-		sum += lua_tonumber(L, i);
-	}
-	lua_pushnumber(L, sum/n);        /* first result */
-	lua_pushnumber(L, sum);         /* second result */
-	return 2;                   /* number of results */
-}
-
 static int
 stopGame(lua_State *L) {
 	running = 0;
@@ -43,9 +23,6 @@ void
 setCFunctions(lua_State *luaCtx) {
 	lua_pushcfunction(luaCtx, &stopGame);
 	lua_setglobal(luaCtx, "stopGame");
-
-	lua_pushcfunction(luaCtx, &foo);
-	lua_setglobal(luaCtx, "foo");
 }
 
 int main() {
@@ -78,6 +55,9 @@ int main() {
 	int pollDeltaTime = 0;
 	while (running) {
 		pollStartTime = getTickCount();
+		/* handle input events */
+
+		/* run the lua Poll function */
 		lua_getglobal(luaCtx, "Poll");
 		if (lua_pcall(luaCtx, 0, 0, 0) != 0) {
 			const char *msg = lua_tostring(luaCtx, -1);
