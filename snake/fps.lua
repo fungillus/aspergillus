@@ -28,7 +28,7 @@ end
 
 function Fps:_trigger()
 	if self.showOutput then
-		print("Fps : ", self.counter)
+		print(string.format("Fps : %d    ", self.counter))
 	end
 	self:_resetValues()
 end
@@ -39,6 +39,7 @@ function Fps:poll()
 		self:_trigger()
 	end
 
+	--[[
 	if self.capFpsAmount > 0 then
 		-- self.counter = delta time
 		--  X = 100
@@ -51,5 +52,6 @@ function Fps:poll()
 		end
 		extra.usleep(self.usleepTime)
 	end
+	--]]
 end
 

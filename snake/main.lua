@@ -349,34 +349,28 @@ function Init()
 	gameState.fps = fps
 end
 
-function gameFrame(tick)
-	if tick == 0 then
+function pollButtons()
+	local currentButtons = getButtonState()
+
+	if currentButtons & buttons.kButtonLeft == buttons.kButtonLeft then
 		gameState.snake:moveLeft()
-	elseif tick == 35 then
-		gameState.snake:moveUp()
-	elseif tick == 45 then
+	elseif currentButtons & buttons.kButtonRight == buttons.kButtonRight then
 		gameState.snake:moveRight()
-	elseif tick == 85 then
+	elseif currentButtons & buttons.kButtonUp == buttons.kButtonUp then
+		gameState.snake:moveUp()
+	elseif currentButtons & buttons.kButtonDown == buttons.kButtonDown then
 		gameState.snake:moveDown()
-	elseif tick == 110 then
-		gameState.snake:moveLeft()
-	elseif tick == 145 then
-		gameState.snake:moveDown()
-	elseif tick == 165 then
-		gameState.snake:moveRight()
-	elseif tick == 190 then
-		gameState.snake:moveUp()
-	elseif tick == 205 then
-		gameState.snake:moveRight()
-	elseif tick == 225 then
-		gameState.snake:moveUp()
-	elseif tick == 245 then
-		gameState.snake:moveLeft()
 	end
 
-	gameState.snake:poll()
-	gameState.bitmap:draw()
-	--gameState.fps:poll()
+	--[[
+	if currentButtons & kButtonB then
+	end
+	if currentButtons & kButtonA then
+	end
+	--]]
+	if currentButtons & buttons.kButtonA == buttons.kButtonA and currentButtons & buttons.kButtonB == buttons.kButtonB then
+		Exit()
+	end
 end
 
 function Exit()
@@ -384,13 +378,10 @@ function Exit()
 	stopGame()
 end
 
-i = 0
-
 function Poll()
-	if i == 255 then
-		Exit()
-	else
-		gameFrame(i)
-		i = i + 1
-	end
+	pollButtons()
+
+	gameState.snake:poll()
+	gameState.bitmap:draw()
+	gameState.fps:poll()
 end
