@@ -185,6 +185,46 @@ function Bitmap:blit(bitmap, x, y)
 	end
 end
 
+-- sourceRectangle is a table like so : {x=nil, y=nil, width=nil, height=nil} where nil values are expected to be actual values
+-- if the full bitmap is to be blit, just pass nil to it.
+function Bitmap:blitSection(bitmap, destinationCoordinates, sourceRectangle)
+	local height = sourceRectangle.height
+	local width = sourceRectangle.width
+	if sourceRectangle.height > bitmap.height then
+		height = bitmap.height
+	end
+	if sourceRectangle.width > bitmap.width then
+		width = bitmap.width
+	end
+
+	if sourceRectangle.x > bitmap.width or sourceRectangle.y > bitmap.height then
+		print("Invalid out of bounds source rectangle coordinates given")
+		return
+	end
+
+	if sourceRectangle.y + sourceRectangle.height > bitmap.height then
+		height = sourceRectangle.y + sourceRectangle.height - bitmap.height
+	end
+
+	if sourceRectangle.x + sourceRectangle.width > bitmap.width then
+		width = sourceRectangle.x + sourceRectangle.width - bitmap.width
+	end
+
+	local initialX = destinationCoordinates.x
+	local x = 0
+	local y = destinationCoordinates.y
+
+	--print("blitSection", initialX, y, width, height, " bitmap height :", bitmap.height)
+	for h = sourceRectangle.y, sourceRectangle.y + height - 1 do
+		x = initialX
+		for w = sourceRectangle.x, sourceRectangle.x + width - 1 do
+			self:putPixel(x, y, bitmap:getPixel(w, h))
+			x = x + 1
+		end
+		y = y + 1
+	end
+end
+
 function Bitmap:blitReverse(bitmap, x, y)
 	local height = bitmap.height
 	local width = bitmap.width
