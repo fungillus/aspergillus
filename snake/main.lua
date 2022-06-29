@@ -4,6 +4,8 @@ require("vector")
 require("fps")
 require("console")
 
+require("fonts")
+
 function calcDistance(coord1, coord2)
 	-- this is the real formula
 	--return math.floor(math.sqrt((coord2[1] - coord1[1])^2 + (coord2[2] - coord1[2])^2))
@@ -170,6 +172,8 @@ function Snake:new(bitmap, startX, startY, o)
 
 	o.apples = nil
 
+	o.score = 0
+
 	setmetatable(o, self)
 	self.__index = self
 	return o
@@ -217,6 +221,8 @@ function Snake:growIfTouchAnApple()
 			self:addTail()
 			self.apples:deleteAppleAtPosition(self.vector:getCurrentCoordinate())
 			self.apples:deleteAppleAtPosition(posX, posY + 2)
+			-- got an apple, here's some score
+			self.score = self.score + 100
 		end
 	end
 end
@@ -317,17 +323,18 @@ local gameState = {
 	,snake = nil
 	,apples = nil
 	,fps = nil
+	,fonts = nil
 }
 
 function Init()
 	print "\x1b[25l"
 
-	bitmap = Bitmap:new(100, 100)
+	local bitmap = Bitmap:new(100, 100)
 
-	snake = Snake:new(bitmap, 80, 50)
+	local snake = Snake:new(bitmap, 80, 50)
 	snake:addTail()
 
-	apples = Apples:new(bitmap)
+	local apples = Apples:new(bitmap)
 	apples:setBoundingBox(5, 5, 95, 95)
 	snake:setApples(apples)
 
@@ -337,16 +344,35 @@ function Init()
 	console.resetScreen()
 	bitmap:draw()
 
-	bitmap:draw()
+	--bitmap:draw()
 
-	fps = Fps:new()
+	local fonts = Fonts:new()
+
+	local fps = Fps:new(function (text) fonts:printText(bitmap, {x=30, y=94}, text) end)
 	fps:togglePrint()
 	fps:setFpsCap(30)
 
 	gameState.bitmap = bitmap
+	gameState.fonts = fonts
 	gameState.snake = snake
 	gameState.apples = apples
 	gameState.fps = fps
+
+	--[[
+	local baseX = 6
+	gameState.bitmap:blit(fontBitmap, baseX, 6)
+	gameState.bitmap:blit(fontBitmap2, baseX + 8, 6)
+	gameState.bitmap:blit(fontBitmap3, baseX + 16, 6)
+	gameState.bitmap:blit(fontBitmap4, baseX + 24, 6)
+	gameState.bitmap:blitSection(fontBitmap5, {x=baseX + 40, y=6}, {x=0, y=8*35, width=fontsImg.width, height=glyphHeight})
+	gameState.bitmap:blitSection(fontBitmap5, {x=baseX + 46, y=6}, {x=0, y=8*34, width=fontsImg.width, height=glyphHeight})
+	gameState.bitmap:blitSection(fontBitmap5, {x=baseX + 52, y=6}, {x=0, y=8*33, width=fontsImg.width, height=glyphHeight})
+	printText({x=0, y=12}, "This is cool")
+
+	printText({x=0, y=32}, "abcdefghijklmnop")
+	printText({x=0, y=38}, "qrstuvwxyz012345")
+	printText({x=0, y=44}, "6789")
+	--]]
 end
 
 function pollButtons()
@@ -379,9 +405,14 @@ function Exit()
 end
 
 function Poll()
+
 	pollButtons()
+
+	gameState.fonts:printText(gameState.bitmap, {x=0, y=6}, "SCORE : " .. tostring(gameState.snake.score))
 
 	gameState.snake:poll()
 	gameState.bitmap:draw()
 	gameState.fps:poll()
+	--print(package.path)
 end
+

@@ -8,6 +8,9 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+/* internal configuration */
+#include <config.h>
+
 LUAMOD_API int luaopen_extra (lua_State *L);
 extern int getTickCount();
 
@@ -85,15 +88,15 @@ setMockButtonsState(int tick) {
 		buttonsState = buttonsState | kButtonLeft;
 	else if (tick == 145)
 		buttonsState = buttonsState | kButtonDown;
-	else if (tick == 165)
+	else if (tick == 160)
 		buttonsState = buttonsState | kButtonRight;
-	else if (tick == 190)
+	else if (tick == 180)
 		buttonsState = buttonsState | kButtonUp;
-	else if (tick == 205)
+	else if (tick == 195)
 		buttonsState = buttonsState | kButtonRight;
-	else if (tick == 225)
+	else if (tick == 210)
 		buttonsState = buttonsState | kButtonUp;
-	else if (tick == 245)
+	else if (tick == 222)
 		buttonsState = buttonsState | kButtonLeft;
 	else if (tick == 255)
 		buttonsState = buttonsState | kButtonA | kButtonB;
@@ -110,6 +113,8 @@ int main() {
 		printf("Error allocating lua state\n");
 		return 1;
 	}
+
+	setenv("LUA_PATH", LUA_PATH, 1);
 
 	luaL_openlibs(luaCtx);
 	luaL_requiref(luaCtx, "extra", luaopen_extra, 1);

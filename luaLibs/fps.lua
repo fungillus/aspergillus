@@ -1,10 +1,11 @@
-Fps = {counter = 0, startTime = 0, nextTriggerTime = 0, showOutput = false, capFpsAmount=0, usleepTime=5000}
+Fps = {counter = 0, startTime = 0, nextTriggerTime = 0, showOutput = false, capFpsAmount=0, usleepTime=5000, printFunction=nil}
 
-function Fps:new()
+function Fps:new(printFunction)
 	o = {}
 	self:_resetValues()
 	setmetatable(o, self)
 	self.__index = self
+	self.printFunction = printFunction or print
 	return o
 end
 
@@ -28,7 +29,7 @@ end
 
 function Fps:_trigger()
 	if self.showOutput then
-		print(string.format("Fps : %d    ", self.counter))
+		self.printFunction(string.format("Fps : %d    ", self.counter))
 	end
 	self:_resetValues()
 end

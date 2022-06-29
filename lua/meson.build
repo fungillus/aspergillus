@@ -17,4 +17,4 @@ lib_files = [
 , 'lua/loadlib.c', 'lua/lcorolib.c', 'lua/linit.c'
 ]
 
-luaDep = static_library('lua', core_files + aux_files + lib_files)
+luaDep = static_library('lua', core_files + aux_files + lib_files, install: true)
