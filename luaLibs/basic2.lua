@@ -250,7 +250,7 @@ end
 function Bitmap:isRectangleEmpty(startX, startY, width, height)
 	for y = startY, height + startY do
 		for x = startX, width + startX do
-			if bitmap:getPixel(x, y) ~= 0 then
+			if self:getPixel(x, y) ~= 0 then
 				return false
 			end
 		end
