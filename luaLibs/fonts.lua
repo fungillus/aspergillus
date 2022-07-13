@@ -30,3 +30,11 @@ function Fonts:printText(destinationBitmap, destinationCoordinate, str)
 		x = x + self.fontsImg.width
 	end
 end
+
+function Fonts:getCharacterWidth()
+	return self.fontsImg.width
+end
+
+function Fonts:getCharacterHeight()
+	return self.glyphHeight
+end
