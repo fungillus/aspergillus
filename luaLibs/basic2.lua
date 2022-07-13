@@ -43,7 +43,7 @@ function fillLine(width, unicodeCharacter)
 	return result
 end
 
-Bitmap = {width = 0, height = 0, realWidth = 0, realHeight = 0, data = {}}
+Bitmap = {width = nil, height = nil, realWidth = nil, realHeight = nil, data = nil}
 
 function Bitmap:new(width, height, o)
 	o = o or {}
@@ -51,6 +51,7 @@ function Bitmap:new(width, height, o)
 	o.height = height
 	o.realWidth = math.floor(width / 2)
 	o.realHeight = math.floor(height / 4)
+	o.data = {}
 	setmetatable(o, self)
 	self.__index = self
 	return o
