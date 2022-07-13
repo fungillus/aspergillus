@@ -257,3 +257,33 @@ function Bitmap:isRectangleEmpty(startX, startY, width, height)
 	end
 	return true
 end
+
+function Bitmap:drawBorder(borderSize)
+	-- up
+	for x = 0, self.width - 1 do
+		for y = 0, borderSize - 1 do
+			self:putPixel(x, y, 1)
+		end
+	end
+
+	-- down
+	for x = 0, self.width - 1 do
+		for y = self.height - borderSize, self.height do
+			self:putPixel(x, y, 1)
+		end
+	end
+
+	-- left
+	for x = 0, borderSize - 1 do
+		for y = 0, self.height - 1 do
+			self:putPixel(x, y, 1)
+		end
+	end
+
+	-- right
+	for x = self.width - borderSize, self.width do
+		for y = 0, self.height - 1 do
+			self:putPixel(x, y, 1)
+		end
+	end
+end
