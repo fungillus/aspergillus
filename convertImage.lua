@@ -1,5 +1,9 @@
 require("tester")
 
+require("debug")
+
+require("basic2")
+
 function packPixels(value1, value2)
 	if value1 == " " then
 		if value2 == " " then
@@ -16,12 +20,12 @@ function packPixels(value1, value2)
 	end
 end
 
-function convertImageToBraille(rawImage)
+function convertRawTextToBraille(rawText)
 	local last = nil
 	local buffer={{}}
 	local bufferRowIndex=1
 	local bufferColIndex=1
-	for c in rawImage:gmatch(".") do
+	for c in rawText:gmatch(".") do
 		if c == "\n" then
 			if last ~= nil then
 				buffer[bufferRowIndex][bufferColIndex] = packPixels(last, " ")
@@ -76,9 +80,19 @@ function convertImageToBraille(rawImage)
 	return {width=width, height=height, data=dataResult}
 end
 
+function convertBrailleToImage(braille)
+	local result = Bitmap:new(braille.width, braille.height)
+	result.data = braille.data
+	return result
+end
+
+function convertRawTextToImage(rawText)
+	return convertBrailleToImage(convertRawTextToBraille(rawText))
+end
+
 function testConvertImage()
 	testCases = {
-		{"letter A", convertImageToBraille, {[[
+		{"letter A", convertRawTextToBraille, {[[
   **
  *  *
 ******
@@ -89,7 +103,7 @@ function testConvertImage()
  
 ]]}, {width=6, height=8, data={0x0231, 0x3030, 0x0132, 0x1000, 0, 0x2000}}}
 
-		,{"letter B", convertImageToBraille, {[[
+		,{"letter B", convertRawTextToBraille, {[[
 **** 
 *   *
 **** 
@@ -100,7 +114,7 @@ function testConvertImage()
      
 ]]}, {width=6, height=8, data={0x3131, 0x3030, 0x0101, 0x3000, 0x3000, 0}}}
 
-		,{"letter C", convertImageToBraille, {[[
+		,{"letter C", convertRawTextToBraille, {[[
  *** 
 *   *
 *    
@@ -115,27 +129,34 @@ function testConvertImage()
 	doTests("Letters Conversion", testCases)
 end
 
---testConvertImage()
+-- check if this script is being run directly with 'lua'
+if debug.getinfo(3) == nil then
+	--testConvertImage()
 
-inputFile=arg[1] or "sampleImage.txt"
+	inputFile=arg[1] or "sampleImage.txt"
 
-f = io.open(inputFile)
-
-if not f then
-	print("Error opening file :", inputfile)
-else
-	local buf = f:read("a")
-	local resultBrailleImage = convertImageToBraille(buf)
-	local isFirst = true
-	io.write("{", "width=", resultBrailleImage.width, ", height=", resultBrailleImage.height, ", data={")
-	for k, v in pairs(resultBrailleImage.data) do
-		if isFirst then
-			isFirst = false
-		else
-			io.write(",")
-		end
-		io.write(v)
+	if inputFile == "-" then
+		f = io.stdin
+	else
+		f = io.open(inputFile)
 	end
-	print("}}")
-	f:close()
+
+	if not f then
+		print("Error opening file :", inputFile)
+	else
+		local buf = f:read("a")
+		local resultBrailleImage = convertRawTextToBraille(buf)
+		local isFirst = true
+		io.write("{", "width=", resultBrailleImage.width, ", height=", resultBrailleImage.height, ", data={")
+		for k, v in pairs(resultBrailleImage.data) do
+			if isFirst then
+				isFirst = false
+			else
+				io.write(",")
+			end
+			io.write(v)
+		end
+		print("}}")
+		f:close()
+	end
 end
