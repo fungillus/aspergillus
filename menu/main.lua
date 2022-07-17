@@ -3,7 +3,9 @@ require("basic2")
 require("fonts")
 require("console")
 
-function createButton(ctx, config, text)
+require("convertImage")
+
+function createButton(fonts, config, text)
 	config = config or {}
 
 	if config.drawBorder == nil then
@@ -14,8 +16,8 @@ function createButton(ctx, config, text)
 		config.borderSize = 1
 	end
 
-	local width = ctx.fonts:getCharacterWidth() * #text
-	local height = ctx.fonts:getCharacterHeight()
+	local width = fonts:getCharacterWidth() * #text
+	local height = fonts:getCharacterHeight()
 
 	local textStartX = 0
 	local textStartY = 0
@@ -31,7 +33,7 @@ function createButton(ctx, config, text)
 
 	local bitmap = Bitmap:new(width, height)
 
-	ctx.fonts:printText(bitmap, {x=textStartX, y=textStartY}, text)
+	fonts:printText(bitmap, {x=textStartX, y=textStartY}, text)
 
 	if config.drawBorder then
 		bitmap:drawBorder(config.borderSize)
@@ -40,34 +42,221 @@ function createButton(ctx, config, text)
 	return bitmap
 end
 
+function drawMenu(ctx, coordinates, menuData)
+	local currentEntry = nil
+	local entryImg = nil
+	local baseBorderSize = 1
+	local borderSize = nil
+	local baseCoordinates = {x = coordinates.x, y = coordinates.y}
+	for entryIndex in pairs(menuData) do
+		currentEntry = menuData[entryIndex]
+		if currentEntry.selected == true then
+			borderSize = baseBorderSize + 1
+		else
+			borderSize = baseBorderSize
+		end
+		if currentEntry.type == "button" then
+			entryImg = createButton(ctx.fonts, {drawBorder = true, borderSize = borderSize}, currentEntry.name)
+
+			ctx.screen:blit(entryImg, baseCoordinates.x, baseCoordinates.y)
+			baseCoordinates.y = baseCoordinates.y + entryImg.height + 2
+		end
+	end
+end
+
+function clearMenu(ctx, coordinates, menuData)
+	local currentEntry = nil
+	local entryImg = nil
+	local baseBorderSize = 1
+	local borderSize = nil
+	local baseCoordinates = {x = coordinates.x, y = coordinates.y}
+	for entryIndex in pairs(menuData) do
+		currentEntry = menuData[entryIndex]
+		if currentEntry.selected == true then
+			borderSize = baseBorderSize + 1
+		else
+			borderSize = baseBorderSize
+		end
+		if currentEntry.type == "button" then
+			entryImg = createButton(ctx.fonts, {drawBorder = true, borderSize = borderSize}, currentEntry.name)
+
+			ctx.screen:blitReverse(entryImg, baseCoordinates.x, baseCoordinates.y)
+			baseCoordinates.y = baseCoordinates.y + entryImg.height + 2
+		end
+	end
+end
+
+function selectNextMenuEntry(menuData)
+	local mustSelectNext = false
+	for entryIndex in pairs(menuData) do
+		if mustSelectNext == true then
+			menuData[entryIndex].selected = true
+			break
+		end
+		if menuData[entryIndex].selected == true then
+			if entryIndex == #menuData then -- can't go beyond the last entry element
+				break
+			end
+			menuData[entryIndex].selected = nil
+			mustSelectNext = true
+		end
+	end
+
+	return menuData
+end
+
+function selectPreviousMenuEntry(menuData)
+	local mustSelectNext = false
+	for entryIndex = #menuData, 0, -1 do
+		if mustSelectNext == true then
+			menuData[entryIndex].selected = true
+			break
+		end
+		if menuData[entryIndex].selected == true then
+			if entryIndex == 0 then -- can't go before the first entry element
+				break
+			end
+			menuData[entryIndex].selected = nil
+			mustSelectNext = true
+		end
+	end
+
+	return menuData
+end
+
+function triggerMenuEntry(menuData)
+	for entryIndex, entry in pairs(menuData) do
+		if entry.selected == true then
+			if entry.onTrigger ~= nil then
+				entry.onTrigger()
+			end
+		end
+	end
+end
+
+currentTick = 0
+menuContext = {}
+
 function Init()
 	--print "\x1b[25l"
 	console.clearScreen()
-	local bitmap = Bitmap:new(100, 100)
+	local screen = Bitmap:new(128, 160)
 
 	local fonts = Fonts:new()
 
-	local ctx = {bitmap = bitmap, fonts = fonts}
+	local ctx = {screen = screen, fonts = fonts}
 
-	local btnMainMenu = createButton(ctx, {drawBorder = true, borderSize = 2}, "Main Menu")
-	local btnSettings = createButton(ctx, {drawBorder = true, borderSize = 1}, "Settings")
-	local btnQuit = createButton(ctx, {drawBorder = true, borderSize = 1}, "Quit")
 
-	local baseMenuCoordinates = {x = 30, y = 20}
+	local imgUpArrow = convertRawTextToImage([[
+   *
+  ***
+ *****
+*******
+  ***
+  ***
+]])
 
-	bitmap:blit(btnMainMenu, baseMenuCoordinates.x, baseMenuCoordinates.y)
-	baseMenuCoordinates.y = baseMenuCoordinates.y + btnMainMenu.height + 2
+	local imgDownArrow = convertRawTextToImage([[
+  ***
+  ***
+*******
+ *****
+  ***
+   *
+]])
 
-	bitmap:blit(btnSettings, baseMenuCoordinates.x, baseMenuCoordinates.y)
-	baseMenuCoordinates.y = baseMenuCoordinates.y + btnSettings.height + 2
+	local imgRightArrow = convertRawTextToImage([[
+  *
+  **
+*****
+******
+*****
+  **
+  *
+]])
 
-	bitmap:blit(btnQuit, baseMenuCoordinates.x, baseMenuCoordinates.y)
-	baseMenuCoordinates.y = baseMenuCoordinates.y + btnQuit.height + 2
+	local imgLeftArrow = convertRawTextToImage([[
+   *
+  **
+ *****
+******
+ *****
+  **
+   *
+]])
 
-	bitmap:draw()
+	-- sound menu
+	-- input binding menu
+	-- video menu
+	--
+	-- menu item types : button, configToggle, configValueSlider, configValueSelector
+	menuContext.menuData = {
+		{name = "Main Menu", type = "button", onTrigger = nil, selected = true}
+		,{name = "Settings", type = "button", onTrigger = nil}
+		,{name = "Quit", type="button", onTrigger = quit}
+	}
+
+	menuContext.ctx = ctx
+	menuContext.baseMenuCoordinate = {x = 25, y = 20}
+
+	drawMenu(ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+
+	-- show the arrow images
+	screen:blit(imgUpArrow, 7, 2)
+	screen:blit(imgLeftArrow, 2, 7)
+	screen:blit(imgRightArrow, 13, 7)
+	screen:blit(imgDownArrow, 7, 13)
+
+	screen:drawBorder(1)
+	screen:draw()
+end
+
+function quit()
+	print "\x1b[25h"
+	stopGame()
 end
 
 function Poll()
-	print "\x1b[25h"
-	stopGame()
+	if currentTick == 90 then
+		quit()
+	else
+		if currentTick == 10 then
+			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+			menuContext.menuData = selectNextMenuEntry(menuContext.menuData)
+		end
+
+		if currentTick == 20 then
+			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+			menuContext.menuData = selectNextMenuEntry(menuContext.menuData)
+		end
+
+		if currentTick == 30 then
+			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+			menuContext.menuData = selectPreviousMenuEntry(menuContext.menuData)
+		end
+
+		if currentTick == 40 then
+			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+			menuContext.menuData = selectPreviousMenuEntry(menuContext.menuData)
+		end
+
+		if currentTick == 50 then
+			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+			menuContext.menuData = selectNextMenuEntry(menuContext.menuData)
+		end
+
+		if currentTick == 52 then
+			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+			menuContext.menuData = selectNextMenuEntry(menuContext.menuData)
+		end
+
+		if currentTick == 60 then
+			triggerMenuEntry(menuContext.menuData)
+		end
+
+		drawMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+		menuContext.ctx.screen:draw()
+
+		currentTick = currentTick + 1
+	end
 end
