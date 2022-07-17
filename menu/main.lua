@@ -42,12 +42,39 @@ function createButton(fonts, config, text)
 	return bitmap
 end
 
+function giveMiddlePoint(screen, image)
+	return (screen.width / 2) - (image.width / 2)
+end
+
+-- alignment is : centered, left or right
+function alignmentCalculation(screen, image, baseXCoordinate, maxXCoordinate, alignment)
+	local result = 0
+	if alignment == "centered" then
+		result = giveMiddlePoint(screen, image)
+	elseif alignment == "left" then
+		result = baseXCoordinate
+	elseif alignment == "right" then
+		-- the goal is : baseXCoordinate + x + image.width == maxXCoordinate
+		-- 		 x = maxXCoordinate - (baseXCoordinate + image.width)
+		result = baseXCoordinate + (maxXCoordinate - (baseXCoordinate + image.width))
+	else
+		result = alignmentCalculation(screen, image, "left")
+	end
+
+	return result
+end
+
 function drawMenu(ctx, coordinates, menuData)
 	local currentEntry = nil
 	local entryImg = nil
 	local baseBorderSize = 1
 	local borderSize = nil
 	local baseCoordinates = {x = coordinates.x, y = coordinates.y}
+	local maxXCoordinate = 0
+	local calculatedXCoordinate = 0
+
+	local isFirst = true
+	local alignment = "left"
 	for entryIndex in pairs(menuData) do
 		currentEntry = menuData[entryIndex]
 		if currentEntry.selected == true then
@@ -58,8 +85,19 @@ function drawMenu(ctx, coordinates, menuData)
 		if currentEntry.type == "button" then
 			entryImg = createButton(ctx.fonts, {drawBorder = true, borderSize = borderSize}, currentEntry.name)
 
-			ctx.screen:blit(entryImg, baseCoordinates.x, baseCoordinates.y)
+			if isFirst then
+				baseCoordinates.x = giveMiddlePoint(ctx.screen, entryImg)
+				maxXCoordinate = baseCoordinates.x + entryImg.width
+			end
+
+			calculatedXCoordinate = alignmentCalculation(ctx.screen, entryImg, baseCoordinates.x, maxXCoordinate, alignment)
+
+			ctx.screen:blit(entryImg, calculatedXCoordinate, baseCoordinates.y)
 			baseCoordinates.y = baseCoordinates.y + entryImg.height + 2
+
+			if isFirst then
+				isFirst = false
+			end
 		end
 	end
 end
@@ -70,6 +108,11 @@ function clearMenu(ctx, coordinates, menuData)
 	local baseBorderSize = 1
 	local borderSize = nil
 	local baseCoordinates = {x = coordinates.x, y = coordinates.y}
+	local maxXCoordinate = 0
+	local calculatedXCoordinate = 0
+
+	local isFirst = true
+	local alignment = "left"
 	for entryIndex in pairs(menuData) do
 		currentEntry = menuData[entryIndex]
 		if currentEntry.selected == true then
@@ -80,8 +123,19 @@ function clearMenu(ctx, coordinates, menuData)
 		if currentEntry.type == "button" then
 			entryImg = createButton(ctx.fonts, {drawBorder = true, borderSize = borderSize}, currentEntry.name)
 
-			ctx.screen:blitReverse(entryImg, baseCoordinates.x, baseCoordinates.y)
+			if isFirst then
+				baseCoordinates.x = giveMiddlePoint(ctx.screen, entryImg)
+				maxXCoordinate = baseCoordinates.x + entryImg.width
+			end
+
+			calculatedXCoordinate = alignmentCalculation(ctx.screen, entryImg, baseCoordinates.x, maxXCoordinate, alignment)
+
+			ctx.screen:blitReverse(entryImg, calculatedXCoordinate, baseCoordinates.y)
 			baseCoordinates.y = baseCoordinates.y + entryImg.height + 2
+
+			if isFirst then
+				isFirst = false
+			end
 		end
 	end
 end
