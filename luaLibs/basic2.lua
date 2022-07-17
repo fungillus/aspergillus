@@ -158,7 +158,7 @@ function Bitmap:draw()
 	local coord = 0
 	local blockValue = 0
 	for h = 0, height - 1 do
-		console.moveCursor(1, h)
+		console.moveCursor(1, h + 1)
 		for w = 0, width - 1 do
 			coord = (w + 1) + (h * width)
 			blockValue = self.data[coord]
@@ -168,6 +168,7 @@ function Bitmap:draw()
 			io.write(showUnicode(convBrailleToUnicode(blockValue)))
 		end
 	end
+	io.flush()
 end
 
 function Bitmap:blit(bitmap, x, y)
