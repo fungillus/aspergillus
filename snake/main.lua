@@ -375,6 +375,38 @@ function Init()
 	--]]
 end
 
+function setMockButtonsState(tick)
+	local buttonsState = 0;
+
+	if tick == 0 then
+		buttonsState = buttonsState | buttons.kButtonLeft
+	elseif tick == 35 then
+		buttonsState = buttonsState | buttons.kButtonUp
+	elseif tick == 45 then
+		buttonsState = buttonsState | buttons.kButtonRight
+	elseif tick == 85 then
+		buttonsState = buttonsState | buttons.kButtonDown
+	elseif tick == 110 then
+		buttonsState = buttonsState | buttons.kButtonLeft
+	elseif tick == 145 then
+		buttonsState = buttonsState | buttons.kButtonDown
+	elseif tick == 160 then
+		buttonsState = buttonsState | buttons.kButtonRight
+	elseif tick == 180 then
+		buttonsState = buttonsState | buttons.kButtonUp
+	elseif tick == 195 then
+		buttonsState = buttonsState | buttons.kButtonRight
+	elseif tick == 210 then
+		buttonsState = buttonsState | buttons.kButtonUp
+	elseif tick == 222 then
+		buttonsState = buttonsState | buttons.kButtonLeft
+	elseif tick == 255 then
+		buttonsState = buttonsState | buttons.kButtonA | buttons.kButtonB
+	end
+
+	return buttonsState
+end
+
 function pollButtons()
 	local currentButtons = getButtonState()
 

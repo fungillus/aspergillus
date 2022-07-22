@@ -73,33 +73,20 @@ setCFunctions(lua_State *luaCtx) {
 }
 
 static void
-setMockButtonsState(int tick) {
-	buttonsState = 0;
-
-	if (tick == 0)
-		buttonsState = buttonsState | kButtonLeft;
-	else if (tick == 35)
-		buttonsState = buttonsState | kButtonUp;
-	else if (tick == 45)
-		buttonsState = buttonsState | kButtonRight;
-	else if (tick == 85)
-		buttonsState = buttonsState | kButtonDown;
-	else if (tick == 110)
-		buttonsState = buttonsState | kButtonLeft;
-	else if (tick == 145)
-		buttonsState = buttonsState | kButtonDown;
-	else if (tick == 160)
-		buttonsState = buttonsState | kButtonRight;
-	else if (tick == 180)
-		buttonsState = buttonsState | kButtonUp;
-	else if (tick == 195)
-		buttonsState = buttonsState | kButtonRight;
-	else if (tick == 210)
-		buttonsState = buttonsState | kButtonUp;
-	else if (tick == 222)
-		buttonsState = buttonsState | kButtonLeft;
-	else if (tick == 255)
-		buttonsState = buttonsState | kButtonA | kButtonB;
+callMockButtonsState(lua_State *luaCtx, int tick) {
+	lua_getglobal(luaCtx, "setMockButtonsState");
+	lua_pushinteger(luaCtx, tick);
+	if (lua_pcall(luaCtx, 1, 1, 0) != 0) {
+		printf("ERROR CALLING setMockButtonsState!!!\n");
+		return;
+	} else {
+		if (!lua_isinteger(luaCtx, -1)) {
+			printf("RESULT IS NOT AN INTEGER!!!\n");
+		} else {
+			buttonsState = lua_tointeger(luaCtx, -1);
+			lua_pop(luaCtx, -1);
+		}
+	}
 }
 
 int main() {
@@ -124,6 +111,7 @@ int main() {
 
 	if (luaL_dofile(luaCtx, "main.lua") != 0) {
 		const char *msg = lua_tostring(luaCtx, -1);
+		lua_pop(luaCtx, -1);
 		printf("Error in the script file main.lua -> %s\n", msg);
 	}
 
@@ -137,12 +125,13 @@ int main() {
 	while (running) {
 		pollStartTime = getTickCount();
 		/* handle input events */
-		setMockButtonsState(tick);
+		callMockButtonsState(luaCtx, tick);
 
 		/* run the lua Poll function */
 		lua_getglobal(luaCtx, "Poll");
 		if (lua_pcall(luaCtx, 0, 0, 0) != 0) {
 			const char *msg = lua_tostring(luaCtx, -1);
+			lua_pop(luaCtx, -1);
 			fprintf(stderr, "Catched an error -> %s\n", msg);
 			break;
 		}
