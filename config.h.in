@@ -1,0 +1,6 @@
+#ifndef __CONFIG_H
+#define __CONFIG_H
+
+#define LUA_PATH "@lua_search_path@"
+
+#endif /* NOT __CONFIG_H */
