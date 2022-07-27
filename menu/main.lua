@@ -194,7 +194,7 @@ menuContext = {}
 function Init()
 	--print "\x1b[25l"
 	console.clearScreen()
-	local screen = Bitmap:new(128, 160)
+	local screen = Bitmap:new(128, 120)
 
 	local fonts = Fonts:new()
 
