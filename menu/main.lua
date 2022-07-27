@@ -247,7 +247,7 @@ function Init()
 	menuContext.menuData = {
 		{name = "Main Menu", type = "button", onTrigger = nil, selected = true}
 		,{name = "Settings", type = "button", onTrigger = nil}
-		,{name = "Quit", type="button", onTrigger = quit}
+		,{name = "Quit", type = "button", onTrigger = quit}
 	}
 
 	menuContext.ctx = ctx
@@ -270,47 +270,66 @@ function quit()
 	stopGame()
 end
 
-function Poll()
-	if currentTick == 90 then
+function setMockButtonsState(tick)
+	if tick == 90 then
 		quit()
 	else
-		if currentTick == 10 then
-			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
-			menuContext.menuData = selectNextMenuEntry(menuContext.menuData)
+		if tick == 10 then
+			return buttons.kButtonDown
 		end
 
-		if currentTick == 20 then
-			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
-			menuContext.menuData = selectNextMenuEntry(menuContext.menuData)
+		if tick == 20 then
+			return buttons.kButtonDown
 		end
 
-		if currentTick == 30 then
-			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
-			menuContext.menuData = selectPreviousMenuEntry(menuContext.menuData)
+		if tick == 30 then
+			return buttons.kButtonUp
 		end
 
-		if currentTick == 40 then
-			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
-			menuContext.menuData = selectPreviousMenuEntry(menuContext.menuData)
+		if tick == 40 then
+			return buttons.kButtonUp
 		end
 
-		if currentTick == 50 then
-			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
-			menuContext.menuData = selectNextMenuEntry(menuContext.menuData)
+		if tick == 50 then
+			return buttons.kButtonDown
 		end
 
-		if currentTick == 52 then
-			clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
-			menuContext.menuData = selectNextMenuEntry(menuContext.menuData)
+		if tick == 52 then
+			return buttons.kButtonDown
 		end
 
-		if currentTick == 60 then
-			triggerMenuEntry(menuContext.menuData)
+		if tick == 60 then
+			return buttons.kButtonA
 		end
+	end
 
+	return 0
+end
+
+function handleInputs()
+	local currentButtons = getButtonState()
+
+	if currentButtons & buttons.kButtonLeft == buttons.kButtonLeft then
+		return
+	elseif currentButtons & buttons.kButtonRight == buttons.kButtonRight then
+		return
+	elseif currentButtons & buttons.kButtonUp == buttons.kButtonUp then
+		clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+		menuContext.menuData = selectPreviousMenuEntry(menuContext.menuData)
 		drawMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
 		menuContext.ctx.screen:draw()
-
-		currentTick = currentTick + 1
+	elseif currentButtons & buttons.kButtonDown == buttons.kButtonDown then
+		clearMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+		menuContext.menuData = selectNextMenuEntry(menuContext.menuData)
+		drawMenu(menuContext.ctx, menuContext.baseMenuCoordinate, menuContext.menuData)
+		menuContext.ctx.screen:draw()
+	elseif currentButtons & buttons.kButtonA == buttons.kButtonA then
+		triggerMenuEntry(menuContext.menuData)
 	end
+
+
+end
+
+function Poll()
+	handleInputs()
 end
