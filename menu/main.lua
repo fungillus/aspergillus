@@ -6,6 +6,8 @@ require("menu")
 
 menuContext = nil
 
+interactive = false
+
 function Init()
 	--print "\x1b[25l"
 	console.clearScreen()
@@ -37,40 +39,42 @@ function quit()
 	stopGame()
 end
 
-function setMockButtonsState(tick)
-	if tick == 90 then
-		quit()
-	else
-		if tick == 10 then
-			return buttons.kButtonDown
+if not interactive then
+	function setMockButtonsState(tick)
+		if tick == 90 then
+			quit()
+		else
+			if tick == 10 then
+				return buttons.kButtonDown
+			end
+
+			if tick == 20 then
+				return buttons.kButtonDown
+			end
+
+			if tick == 30 then
+				return buttons.kButtonUp
+			end
+
+			if tick == 40 then
+				return buttons.kButtonUp
+			end
+
+			if tick == 50 then
+				return buttons.kButtonDown
+			end
+
+			if tick == 52 then
+				return buttons.kButtonDown
+			end
+
+			if tick == 60 then
+				return buttons.kButtonA
+			end
 		end
 
-		if tick == 20 then
-			return buttons.kButtonDown
-		end
-
-		if tick == 30 then
-			return buttons.kButtonUp
-		end
-
-		if tick == 40 then
-			return buttons.kButtonUp
-		end
-
-		if tick == 50 then
-			return buttons.kButtonDown
-		end
-
-		if tick == 52 then
-			return buttons.kButtonDown
-		end
-
-		if tick == 60 then
-			return buttons.kButtonA
-		end
+		return 0
 	end
-
-	return 0
 end
 
 function handleInputs()
