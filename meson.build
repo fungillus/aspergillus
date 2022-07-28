@@ -2,6 +2,7 @@ project('fungillus-platform', 'c')
 
 subdir('lua/')
 subdir('libs/')
+subdir('joystick/')
 
 cc = meson.get_compiler('c')
 
@@ -17,5 +18,4 @@ configure_file(input: 'config.h.in'
 		,output: 'config.h'
 		,configuration: conf_data)
 
-
-executable('runGame', ['main.c'], customLibs, dependencies: [mDep, dlDep], link_with: [luaDep], include_directories: luaIncludePath)
+executable('runGame', ['main.c'], customLibs, dependencies: [mDep, dlDep], link_with: [luaDep, libjoystick], include_directories: [luaIncludePath, libjoystickPath])
