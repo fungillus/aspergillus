@@ -1,0 +1,6 @@
+option(
+	'embed-custom-luaLibs'
+	,type: 'boolean'
+	,value: true
+	,description: 'Embed the content of the luaLibs directory in the final executable'
+)

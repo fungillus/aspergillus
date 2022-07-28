@@ -10,6 +10,10 @@
 
 #include <joystick.h>
 
+#if IS_CUSTOM_LUALIBS_EMBEDDED
+#include <customLuaLibs.h>
+#endif /* IS_CUSTOM_LUALIBS_EMBEDDED */
+
 /* internal configuration */
 #include <config.h> /* LUA_PATH */
 
@@ -108,6 +112,10 @@ int main() {
 	luaL_openlibs(luaCtx);
 	luaL_requiref(luaCtx, "extra", luaopen_extra, 1);
 	lua_pop(luaCtx, 1);
+
+#if IS_CUSTOM_LUALIBS_EMBEDDED
+	loadLuaLibraries(luaCtx);
+#endif /* IS_CUSTOM_LUALIBS_EMBEDDED */
 
 	setCFunctions(luaCtx);
 

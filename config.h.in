@@ -3,4 +3,6 @@
 
 #define LUA_PATH "@lua_search_path@"
 
+#define IS_CUSTOM_LUALIBS_EMBEDDED @EMBED_CUSTOM_LUALIBS@
+
 #endif /* NOT __CONFIG_H */
