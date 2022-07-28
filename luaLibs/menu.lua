@@ -217,7 +217,7 @@ function Menu:selectPrevious()
 			break
 		end
 		if self.entries[entryIndex].selected == true then
-			if entryIndex == 0 then -- can't go before the first entry element
+			if entryIndex <= 1 then -- can't go before the first entry element
 				break
 			end
 			self.entries[entryIndex].selected = nil
