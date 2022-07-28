@@ -8,8 +8,10 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include <joystick.h>
+
 /* internal configuration */
-#include <config.h>
+#include <config.h> /* LUA_PATH */
 
 LUAMOD_API int luaopen_extra (lua_State *L);
 extern int getTickCount();
@@ -17,6 +19,8 @@ extern int getTickCount();
 static int running = 1;
 
 static int buttonsState = 0;
+
+static JsState *jsContext;
 
 static int
 stopGame(lua_State *L) {
@@ -26,20 +30,15 @@ stopGame(lua_State *L) {
 
 static int
 getButtonState(lua_State *L) {
+#if oldVersion
 	lua_pushinteger(L, buttonsState); /* current */
+#else /* not oldVersion */
+	lua_pushinteger(L, joystick_GetButtonState(jsContext)); /* current */
+#endif /* not oldVersion */
 	lua_pushinteger(L, 0); /* pressed */
 	lua_pushinteger(L, 0); /* released */
 	return 3;
 }
-
-typedef enum {
-	kButtonLeft = (1<<0)
-	,kButtonRight = (1<<1)
-	,kButtonUp = (1<<2)
-	,kButtonDown = (1<<3)
-	,kButtonB = (1<<4)
-	,kButtonA = (1<<5)
-} Buttons;
 
 static void
 setCFunctions(lua_State *luaCtx) {
@@ -73,17 +72,18 @@ setCFunctions(lua_State *luaCtx) {
 }
 
 static void
-callMockButtonsState(lua_State *luaCtx, int tick) {
+callMockButtonsState(JsState *js, lua_State *luaCtx, int tick) {
 	lua_getglobal(luaCtx, "setMockButtonsState");
 	lua_pushinteger(luaCtx, tick);
 	if (lua_pcall(luaCtx, 1, 1, 0) != 0) {
-		printf("ERROR CALLING setMockButtonsState!!!\n");
+		/* printf("ERROR CALLING setMockButtonsState!!!\n"); */
 		return;
 	} else {
 		if (!lua_isinteger(luaCtx, -1)) {
 			printf("RESULT IS NOT AN INTEGER!!!\n");
 		} else {
-			buttonsState = lua_tointeger(luaCtx, -1);
+			/* buttonsState = lua_tointeger(luaCtx, -1); */
+			joystick_SetButtonState(js, lua_tointeger(luaCtx, -1));
 			lua_pop(luaCtx, -1);
 		}
 	}
@@ -103,6 +103,8 @@ int main() {
 
 	setenv("LUA_PATH", LUA_PATH, 1);
 
+	jsContext = joystick_Create();
+
 	luaL_openlibs(luaCtx);
 	luaL_requiref(luaCtx, "extra", luaopen_extra, 1);
 	lua_pop(luaCtx, 1);
@@ -113,6 +115,10 @@ int main() {
 		const char *msg = lua_tostring(luaCtx, -1);
 		lua_pop(luaCtx, -1);
 		printf("Error in the script file main.lua -> %s\n", msg);
+
+		joystick_Destroy(jsContext);
+		lua_close(luaCtx);
+		return 1;
 	}
 
 	lua_getglobal(luaCtx, "Init");
@@ -125,7 +131,8 @@ int main() {
 	while (running) {
 		pollStartTime = getTickCount();
 		/* handle input events */
-		callMockButtonsState(luaCtx, tick);
+		joystick_Poll(jsContext);
+		callMockButtonsState(jsContext, luaCtx, tick);
 
 		/* run the lua Poll function */
 		lua_getglobal(luaCtx, "Poll");
@@ -150,6 +157,8 @@ int main() {
 		}
 		tick++;
 	}
+
+	joystick_Destroy(jsContext);
 
 	lua_close(luaCtx);
 
