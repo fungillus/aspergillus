@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <string.h>
 
 /*      lua       */
 #include <lua.h>
@@ -93,16 +94,23 @@ callMockButtonsState(JsState *js, lua_State *luaCtx, int tick) {
 	}
 }
 
-int main() {
+int main(int argc, char **argv) {
 	lua_State *luaCtx = NULL;
 	luaCtx = luaL_newstate();
 	int targetFramesPerSecond = 30;
 	int programStartTime = getTickCount();
 	int tick = 0;
+	char mainLuaPath[2048];
 
 	if (!luaCtx) {
 		printf("Error allocating lua state\n");
 		return 1;
+	}
+
+	if (argc >= 1) {
+		snprintf(mainLuaPath, 2048, "%s/main.lua", argv[1]);
+	} else {
+		strcpy(mainLuaPath, "main.lua");
 	}
 
 	setenv("LUA_PATH", LUA_PATH, 1);
@@ -119,7 +127,7 @@ int main() {
 
 	setCFunctions(luaCtx);
 
-	if (luaL_dofile(luaCtx, "main.lua") != 0) {
+	if (luaL_dofile(luaCtx, mainLuaPath) != 0) {
 		const char *msg = lua_tostring(luaCtx, -1);
 		lua_pop(luaCtx, -1);
 		printf("Error in the script file main.lua -> %s\n", msg);
