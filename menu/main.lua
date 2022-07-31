@@ -77,22 +77,6 @@ if not interactive then
 	end
 end
 
-function handleInputs()
-	local currentButtons = getButtonState()
-
-	if currentButtons & buttons.kButtonLeft == buttons.kButtonLeft then
-		return
-	elseif currentButtons & buttons.kButtonRight == buttons.kButtonRight then
-		return
-	elseif currentButtons & buttons.kButtonUp == buttons.kButtonUp then
-		menuContext:selectPrevious()
-	elseif currentButtons & buttons.kButtonDown == buttons.kButtonDown then
-		menuContext:selectNext()
-	elseif currentButtons & buttons.kButtonA == buttons.kButtonA then
-		menuContext:trigger()
-	end
-end
-
 function Poll()
-	handleInputs()
+	menuContext:handleInputs()
 end
