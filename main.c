@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	if (argc >= 1) {
+	if (argc > 1) {
 		snprintf(mainLuaPath, 2048, "%s/main.lua", argv[1]);
 	} else {
 		strcpy(mainLuaPath, "main.lua");
