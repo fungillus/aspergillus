@@ -4,7 +4,7 @@ require("fonts")
 
 require("convertImage")
 
-Menu = {drawContext = nil, entries = nil, drawBitmaps = nil, currentPage = nil, coordinate = nil, arrowBitmaps = nil, alignment = nil}
+Menu = {drawContext = nil, entries = nil, drawBitmaps = nil, currentPage = nil, coordinate = nil, arrowBitmaps = nil, alignment = nil, buttonPressTimeout = nil, buttonTimeouts = nil}
 
 function Menu:new(drawContext, coordinate, menuEntries)
 	o = o or {}
@@ -14,6 +14,8 @@ function Menu:new(drawContext, coordinate, menuEntries)
 	o.coordinate = {x = coordinate.x, y = coordinate.y} or {x = 0, y = 0}
 	o.currentPage = 0
 	o.alignment = "left"
+	o.buttonsPressTimeout = 20
+	o.buttonsPressNextTimeout = {}
 	o.arrowBitmaps = {}
 
 	o.arrowBitmaps.up = convertRawTextToImage([[
@@ -234,6 +236,43 @@ function Menu:trigger()
 			if entry.onTrigger ~= nil then
 				entry.onTrigger()
 			end
+		end
+	end
+end
+
+function handleTimeout(tbl, name, timeout)
+	--print("handleTimeout", name)
+	if tbl[name] ~= nil then
+		if tbl[name] <= extra.getTickCount() then
+			--print("handleTimeout", "done", tbl[name])
+			tbl[name] = nil
+			return true
+		end
+	else
+		tbl[name] = extra.getTickCount() + timeout
+		return true
+	end
+	return false
+end
+
+function Menu:handleInputs()
+	local currentButtons = getButtonState()
+
+	if currentButtons & buttons.kButtonLeft == buttons.kButtonLeft then
+		return
+	elseif currentButtons & buttons.kButtonRight == buttons.kButtonRight then
+		return
+	elseif currentButtons & buttons.kButtonUp == buttons.kButtonUp then
+		if handleTimeout(self.buttonsPressNextTimeout, "buttonUp", self.buttonsPressTimeout) then
+			menuContext:selectPrevious()
+		end
+	elseif currentButtons & buttons.kButtonDown == buttons.kButtonDown then
+		if handleTimeout(self.buttonsPressNextTimeout, "buttonDown", self.buttonsPressTimeout) then
+			menuContext:selectNext()
+		end
+	elseif currentButtons & buttons.kButtonA == buttons.kButtonA then
+		if handleTimeout(self.buttonsPressNextTimeout, "buttonA", self.buttonsPressTimeout + 100) then
+			menuContext:trigger()
 		end
 	end
 end
