@@ -61,11 +61,11 @@ if not interactive then
 				return buttons.kButtonDown
 			end
 
-			if tick == 52 then
+			if tick == 60 then
 				return buttons.kButtonDown
 			end
 
-			if tick == 60 then
+			if tick == 70 then
 				return buttons.kButtonA
 			end
 		end
