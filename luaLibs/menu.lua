@@ -8,7 +8,7 @@ Menu = {drawContext = nil, entries = nil, drawBitmaps = nil, currentPage = nil, 
 
 function Menu:new(drawContext, coordinate, menuEntries)
 	o = o or {}
-	o.drawContext = drawContext
+	o.drawContext = {screen=drawContext.screen, fonts=drawContext.fonts or Fonts:new()}
 	o.entries = menuEntries or {}
 	o.drawnMenuObjects = {}
 	o.coordinate = {x = coordinate.x, y = coordinate.y} or {x = 0, y = 0}

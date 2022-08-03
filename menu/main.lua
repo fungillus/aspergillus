@@ -1,5 +1,4 @@
 require("basic2")
-require("fonts")
 require("console")
 
 require("menu")
@@ -13,8 +12,6 @@ function Init()
 	console.clearScreen()
 	local screen = Bitmap:new(128, 120)
 
-	local fonts = Fonts:new()
-
 	-- sound menu
 	-- input binding menu
 	-- video menu
@@ -26,7 +23,7 @@ function Init()
 		,{name = "Quit", type = "button", onTrigger = quit}
 	}
 
-	menuContext = Menu:new({screen = screen, fonts = fonts}, {x = 25, y = 20}, menuData)
+	menuContext = Menu:new({screen = screen}, {x = 25, y = 20}, menuData)
 	menuContext:alignLeft()
 
 	screen:drawBorder(1)
