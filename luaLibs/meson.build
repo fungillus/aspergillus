@@ -8,52 +8,29 @@ customLuaLibs = []
 # the order of these custom_targets is significant
 # because of their inter dependencies
 
-customLuaLibs += custom_target('tester'
-	      ,input: 'tester.lua'
-	      ,output: 'tester.lua.c'
-	      ,capture: true
-	      ,command: [xxdExecutable, '-i', '@INPUT0@'])
+luaLibFiles = [
+	'tester.lua'
+	,'console.lua'
+	,'vector.lua'
+	,'fps.lua'
+	,'basic2.lua'
+	,'fonts.lua'
+	,'convertImage.lua'
+	,'menu.lua'
+]
 
-customLuaLibs += custom_target('console'
-	      ,input: 'console.lua'
-	      ,output: 'console.lua.c'
+foreach luaLib : luaLibFiles
+  customLuaLibs += custom_target(luaLib
+	      ,input: luaLib
+	      ,output: luaLib + '.c'
 	      ,capture: true
 	      ,command: [xxdExecutable, '-i', '@INPUT0@'])
+endforeach
 
-customLuaLibs += custom_target('vector'
-	      ,input: 'vector.lua'
-	      ,output: 'vector.lua.c'
-	      ,capture: true
-	      ,command: [xxdExecutable, '-i', '@INPUT0@'])
-
-customLuaLibs += custom_target('fps'
-	      ,input: 'fps.lua'
-	      ,output: 'fps.lua.c'
-	      ,capture: true
-	      ,command: [xxdExecutable, '-i', '@INPUT0@'])
-
-customLuaLibs += custom_target('basic2'
-	      ,input: 'basic2.lua'
-	      ,output: 'basic2.lua.c'
-	      ,capture: true
-	      ,command: [xxdExecutable, '-i', '@INPUT0@'])
-
-customLuaLibs += custom_target('fonts'
-	      ,input: 'fonts.lua'
-	      ,output: 'fonts.lua.c'
-	      ,capture: true
-	      ,command: [xxdExecutable, '-i', '@INPUT0@'])
-
-customLuaLibs += custom_target('convertImage'
-	      ,input: 'convertImage.lua'
-	      ,output: 'convertImage.lua.c'
-	      ,capture: true
-	      ,command: [xxdExecutable, '-i', '@INPUT0@'])
-
-customLuaLibs += custom_target('menu'
-	      ,input: 'menu.lua'
-	      ,output: 'menu.lua.c'
-	      ,capture: true
-	      ,command: [xxdExecutable, '-i', '@INPUT0@'])
+customLuaLibs += custom_target('customLuaLibHeader'
+    ,input: luaLibFiles
+    ,output: 'customLuaLibs.h'
+    ,command: ['genCustomLuaLibs.sh', '@INPUT@']
+)
 
 customLuaLibs += 'luaLibs/customLuaLibs.c'
