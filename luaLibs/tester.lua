@@ -1,17 +1,61 @@
 
+function isEq(value1, value2)
+	if type(value1) == "table" and type(value2) == "table" then
+		if #value1 ~= #value2 then
+			return false
+		else
+			for key, value in pairs(value1) do
+				if not isEq(value, value2[key]) then
+					return false
+				end
+			end
+			return true
+		end
+	else
+		return value1 == value2
+	end
+end
+
+--print(isEq({data={1}}, {data={1}}))
+
+function prettyPrintTable(tableData)
+	local result = ""
+	if type(tableData) == "table" then
+		result = "{"
+		for key, value in pairs(tableData) do
+			if type(value) == "table" then
+				result = result .. "," .. prettyPrintTable(value)
+			else
+				result = result .. "," .. tostring(value)
+			end
+		end
+	end
+	return result .. "}"
+end
+
 function doTest(testDescription, functionToTest, functionArguments, expectedResult)
 
 	io.write("Test " .. testDescription .. " : ")
 
 	local result = functionToTest(table.unpack(functionArguments))
 
-	if (result == expectedResult) then
+	if (isEq(result, expectedResult) and isEq(expectedResult, result)) then
 		print("\x1b[38;5;10mpassed\x1b[0m")
 		return true
 	else 
-		print("\x1b[38;5;1mfailed\x1b[0m\n"
-			,"We got : " .. tostring(result) .. "\n"
-			,"rather than : " .. tostring(expectedResult))
+		print("\x1b[38;5;1mfailed\x1b[0m")
+		if type(result) == "table" then
+			--print("We got :", table.unpack(result) or "nothing")
+			print("We got :", prettyPrintTable(result))
+		else
+			print("We got :", tostring(result))
+		end
+		if type(expectedResult) == "table" then
+			--print("rather than :", table.unpack(expectedResult) or "nothing")
+			print("rather than :", prettyPrintTable(expectedResult))
+		else
+			print("rather than :", tostring(expectedResult))
+		end
 		return false
 	end
 end
