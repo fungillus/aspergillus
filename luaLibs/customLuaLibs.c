@@ -4,6 +4,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include <internal_customLuaLibs.h>
 #include <customLuaLibs.h>
 
 static void

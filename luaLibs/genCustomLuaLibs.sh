@@ -16,11 +16,11 @@ for entry in $@; do
 	entriesCount=$((entriesCount + 1))
 done
 
-cat - > customLuaLibs.h << EOF
+cat - << EOF
 /* This content is automatically generated, don't edit here */
 
-#ifndef __CUSTOMLUALIBS_H
-#define __CUSTOMLUALIBS_H
+#ifndef __INTERNAL_CUSTOMLUALIBS_H
+#define __INTERNAL_CUSTOMLUALIBS_H
 
 typedef struct {
 	const char *data;
@@ -48,7 +48,7 @@ const int libraryEntriesCount = $entriesCount;
 
 extern void loadLuaLibraries(lua_State *L);
 
-#endif /* NOT __CUSTOMLUALIBS_H */
+#endif /* NOT __INTERNAL_CUSTOMLUALIBS_H */
 EOF
 
 exit 0

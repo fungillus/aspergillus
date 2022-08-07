@@ -27,10 +27,15 @@ foreach luaLib : luaLibFiles
 	      ,command: [xxdExecutable, '-i', '@INPUT0@'])
 endforeach
 
-customLuaLibs += custom_target('customLuaLibHeader'
+customLuaLibsHeader = custom_target('customLuaLibHeader'
     ,input: luaLibFiles
-    ,output: 'customLuaLibs.h'
+    ,output: 'internal_customLuaLibs.h'
+    ,capture: true
     ,command: ['genCustomLuaLibs.sh', '@INPUT@']
 )
 
-customLuaLibs += 'luaLibs/customLuaLibs.c'
+customLuaLibs += 'customLuaLibs.c'
+
+luaIncludePath = include_directories(['../lua/lua', '..'])
+
+libCustomLuaLibs = static_library('CustomLuaLibs', [customLuaLibsHeader, customLuaLibs], link_with: [luaDep], include_directories: [luaIncludePath])

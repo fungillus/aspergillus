@@ -11,12 +11,12 @@
 
 #include <joystick.h>
 
+/* internal configuration */
+#include <config.h> /* LUA_PATH */
+
 #if IS_CUSTOM_LUALIBS_EMBEDDED
 #include <customLuaLibs.h>
 #endif /* IS_CUSTOM_LUALIBS_EMBEDDED */
-
-/* internal configuration */
-#include <config.h> /* LUA_PATH */
 
 LUAMOD_API int luaopen_extra (lua_State *L);
 extern int getTickCount();

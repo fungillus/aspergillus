@@ -13,11 +13,11 @@ dlDep = cc.find_library('dl', required: false)
 
 luaIncludePath = include_directories(['lua/lua', 'luaLibs'])
 
-runGameSourceFiles = ['main.c']
+extraDependencies = [luaDep, libjoystick]
 
 conf_data = configuration_data()
 if get_option('embed-custom-luaLibs')
-  runGameSourceFiles += customLuaLibs
+  extraDependencies += libCustomLuaLibs
   conf_data.set('EMBED_CUSTOM_LUALIBS', 1)
   conf_data.set('lua_search_path', '/usr/share/lua/?.lua' + ';./?.lua')
 else
@@ -29,4 +29,4 @@ configure_file(input: 'config.h.in'
 		,output: 'config.h'
 		,configuration: conf_data)
 
-executable('runGame', runGameSourceFiles, customLibs, dependencies: [mDep, dlDep], link_with: [luaDep, libjoystick], include_directories: [luaIncludePath, libjoystickPath])
+executable('runGame', ['main.c'], customLibs, dependencies: [mDep, dlDep], link_with: extraDependencies, include_directories: [luaIncludePath, libjoystickPath])
