@@ -1,0 +1,18 @@
+add a menu title
+
+potentially add a pointer to the currently selected menu entry
+
+add the different menu entry types
+	booleans
+	0 to 100%
+	some entry to set the key mapping
+	move to the previous menu
+	move to the entry's linked menu
+
+add support for the standard button events function
+
+arrows should be used to show additional possible movements
+
+a certain menu entry type should move to the right to move to the next menu.
+
+Animate the transitions between menus right and left and also up and down.
