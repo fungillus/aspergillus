@@ -13,6 +13,7 @@ luaLibFiles = [
 	,'console.lua'
 	,'vector.lua'
 	,'fps.lua'
+	,'animation.lua'
 	,'basic2.lua'
 	,'fonts.lua'
 	,'convertImage.lua'
