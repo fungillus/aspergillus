@@ -143,7 +143,7 @@ function Init()
 	local gameMakerName = "Fungillus"
 	local gameMakerNameBitmap = Bitmap:new(#gameMakerName * fonts:getCharacterWidth(), fonts:getCharacterHeight())
 	fonts:printText(gameMakerNameBitmap, {x=0, y=0}, gameMakerName)
-	table.insert(animations, Animate:new({gameMakerNameBitmap}, 250, {x=20, y=40}, extra.getTickCount() + 200))
+	table.insert(animations, Animate:new({gameMakerNameBitmap}, 250, {x=20, y=40}, extra.getTickCount() + 220))
 
 	table.insert(animations, Animate:new(funkyAnim, 5, {x=20, y=40}, extra.getTickCount() + 30))
 	table.insert(animations, Animate:new(funkyAnim, 5, {x=28, y=40}, extra.getTickCount() + 60))
