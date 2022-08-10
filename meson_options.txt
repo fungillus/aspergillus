@@ -1,6 +1,13 @@
 option(
-	'embed-custom-luaLibs'
-	,type: 'boolean'
-	,value: true
-	,description: 'Embed the content of the luaLibs directory in the final executable'
+  'embed-custom-luaLibs'
+  ,type: 'boolean'
+  ,value: true
+  ,description: 'Embed the content of the luaLibs directory in the final executable'
+)
+
+option(
+  'static'
+  ,type: 'boolean'
+  ,value: false
+  ,description: 'build runGame as a statically linked executable'
 )
