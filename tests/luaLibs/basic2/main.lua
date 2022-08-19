@@ -13,8 +13,7 @@ function Init()
 		return
 	end
 
-	-- convBrailleToRawUnicodeValue
-	local convRawUnicodeValueToUnicodeTests = {
+	local convBrailleToRawUnicodeValueTests = {
 		{"1st", convBrailleToRawUnicodeValue, {0x3333}, 0x28FF}
 		,{"2nd", convBrailleToRawUnicodeValue, {0x1110}, 0x2807}
 		,{"3rd", convBrailleToRawUnicodeValue, {0x1111}, 0x2847}
@@ -22,7 +21,7 @@ function Init()
 		,{"5th", convBrailleToRawUnicodeValue, {0x0223}, 0x28F0}
 	}
 
-	if not doTests("convRawUnicodeValueToUnicode", convRawUnicodeValueToUnicodeTests) then
+	if not doTests("convBrailleToRawUnicodeValue", convBrailleToRawUnicodeValueTests) then
 		return
 	end
 
