@@ -50,11 +50,10 @@ function convBrailleToUnicode(brailleNumber)
 	local digit3 = (baseValue & 0xf0) >> 4
 	local digit4 = baseValue & 0x0f
 
-	local b1=0xe2
 	local b2=0xa0 + ((digit3 >> 2) & 0x3)
 	local b3=0x80 + ((digit3 & 0x3) << 4) + digit4
 
-	return string.format("%c%c%c", b1, b2, b3)
+	return string.format("%c%c%c", 0xe2, b2, b3)
 end
 
 function fillLine(width, unicodeCharacter)
