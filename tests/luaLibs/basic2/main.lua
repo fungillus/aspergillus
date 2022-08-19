@@ -54,13 +54,11 @@ function Init()
 ⡏⠉⠉⢹
 ⣇⣀⣀⣸
 ]]}
-		-- NOTE that empty spaces are unicode empty braille, not normal spaces
-		-- we should probably fix that
 		,{"twenty by twenty", bitmapDrawBorder, {20, 20, 1}, [[
 ⡏⠉⠉⠉⠉⠉⠉⠉⠉⢹
-⡇⠀⠀⠀⠀⠀⠀⠀⠀⢸
-⡇⠀⠀⠀⠀⠀⠀⠀⠀⢸
-⡇⠀⠀⠀⠀⠀⠀⠀⠀⢸
+⡇        ⢸
+⡇        ⢸
+⡇        ⢸
 ⣇⣀⣀⣀⣀⣀⣀⣀⣀⣸
 ]]}
 	}

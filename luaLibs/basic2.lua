@@ -161,10 +161,11 @@ function Bitmap:marshalRow(rowNumber)
 	for w = 0, width - 1 do
 		coord = (w + 1) + (rowNumber * width)
 		blockValue = self.data[coord]
-		if blockValue == nil then
-			blockValue = 0
+		if blockValue == nil or blockValue == 0 then
+			result = result .. " "
+		else
+			result = result .. convBrailleToUnicode(blockValue)
 		end
-		result = result .. convBrailleToUnicode(blockValue)
 	end
 	return result
 end
