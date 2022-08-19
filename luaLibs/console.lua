@@ -1,8 +1,7 @@
 console = {}
 
 function console.moveCursor(x, y)
-	local ansiCommand = "\x1b[" .. tostring(y) .. ";" .. tostring(x) .. "H"
-	print(ansiCommand)
+	print(string.format("\x1b[%d;%dH", y, x))
 end
 
 function console.clearScreen()
