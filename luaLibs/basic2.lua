@@ -1,7 +1,7 @@
 
 require("console")
 
-function showUnicode(unicodeCharacter)
+function convRawUnicodeValueToUnicode(unicodeCharacter)
 	local digit1 = (unicodeCharacter & 0xf000) >> 12
 	local digit2 = (unicodeCharacter & 0x0f00) >> 8
 	local digit3 = (unicodeCharacter & 0x00f0) >> 4
@@ -20,7 +20,7 @@ function showUnicode(unicodeCharacter)
 	return string.format("%c%c%c", b1, b2, b3)
 end
 
-function convBrailleToUnicode(brailleNumber)
+function convBrailleToRawUnicodeValue(brailleNumber)
 	local digit1 = (brailleNumber & 0xf000) >> 12
 	local digit2 = (brailleNumber & 0x0f00) >> 8
 	local digit3 = (brailleNumber & 0x00f0) >> 4
@@ -37,7 +37,7 @@ end
 function fillLine(width, unicodeCharacter)
 	local result=""
 	for w=1, width do
-		result = result .. showUnicode(unicodeCharacter)
+		result = result .. convRawUnicodeValueToUnicode(unicodeCharacter)
 	end
 
 	return result
@@ -129,23 +129,29 @@ function Bitmap:putPixel(x, y, pixel)
 	self.data[coord] = convChart[convertedCoord](value)
 end
 
-function Bitmap:show()
-	local height = self.realHeight
+function Bitmap:marshalRow(rowNumber)
 	local width = self.realWidth
 
+	local result = ""
 	local coord = 0
 	local blockValue = 0
-	local result = ""
-	for h = 0, height - 1 do
-		for w = 0, width - 1 do
-			coord = (w + 1) + (h * width)
-			blockValue = self.data[coord]
-			if ( blockValue == nil ) then
-				blockValue = 0
-			end
-			result = result .. showUnicode(convBrailleToUnicode(blockValue))
+	for w = 0, width - 1 do
+		coord = (w + 1) + (rowNumber * width)
+		blockValue = self.data[coord]
+		if blockValue == nil then
+			blockValue = 0
 		end
-		result = result .. "\n"
+		result = result .. convRawUnicodeValueToUnicode(convBrailleToRawUnicodeValue(blockValue))
+	end
+	return result
+end
+
+function Bitmap:getBuffer()
+	local height = self.realHeight
+	local result = ""
+
+	for h = 0, height - 1 do
+		result = result .. self:marshalRow(h) .. "\n"
 	end
 
 	return result
@@ -153,20 +159,11 @@ end
 
 function Bitmap:draw()
 	local height = self.realHeight
-	local width = self.realWidth
 
-	local coord = 0
-	local blockValue = 0
 	for h = 0, height - 1 do
 		console.moveCursor(1, h + 1)
-		for w = 0, width - 1 do
-			coord = (w + 1) + (h * width)
-			blockValue = self.data[coord]
-			if ( blockValue == nil ) then
-				blockValue = 0
-			end
-			io.write(showUnicode(convBrailleToUnicode(blockValue)))
-		end
+
+		io.write(self:marshalRow(h))
 	end
 	io.flush()
 end
