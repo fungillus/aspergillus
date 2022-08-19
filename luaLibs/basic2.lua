@@ -34,6 +34,29 @@ function convBrailleToRawUnicodeValue(brailleNumber)
 	return 0x2800 + layer1A[digit1 + 1] + layer2A[digit2 + 1] + layer3A[digit3 + 1] + layer4A[digit4 + 1]
 end
 
+function convBrailleToUnicode(brailleNumber)
+	local brailleLayers = {
+		{0x00, 0x01, 0x08, 0x09}
+		,{0x00, 0x02, 0x10, 0x12}
+		,{0x00, 0x04, 0x20, 0x24}
+		,{0x00, 0x40, 0x80, 0xC0}
+	}
+
+	local baseValue = brailleLayers[1][((brailleNumber & 0xf000) >> 12) + 1]
+			+ brailleLayers[2][((brailleNumber & 0x0f00) >> 8) + 1]
+			+ brailleLayers[3][((brailleNumber & 0x00f0) >> 4) + 1]
+			+ brailleLayers[4][(brailleNumber & 0x000f) + 1]
+	
+	local digit3 = (baseValue & 0xf0) >> 4
+	local digit4 = baseValue & 0x0f
+
+	local b1=0xe2
+	local b2=0xa0 + ((digit3 >> 2) & 0x3)
+	local b3=0x80 + ((digit3 & 0x3) << 4) + digit4
+
+	return string.format("%c%c%c", b1, b2, b3)
+end
+
 function fillLine(width, unicodeCharacter)
 	local result=""
 	for w=1, width do
@@ -141,7 +164,7 @@ function Bitmap:marshalRow(rowNumber)
 		if blockValue == nil then
 			blockValue = 0
 		end
-		result = result .. convRawUnicodeValueToUnicode(convBrailleToRawUnicodeValue(blockValue))
+		result = result .. convBrailleToUnicode(blockValue)
 	end
 	return result
 end

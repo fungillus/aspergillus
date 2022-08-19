@@ -25,6 +25,18 @@ function Init()
 		return
 	end
 
+	local convBrailleToUnicodeTests = {
+		{"1st", convBrailleToUnicode, {0x3333}, "⣿"}
+		,{"2nd", convBrailleToUnicode, {0x1110}, "⠇"}
+		,{"3rd", convBrailleToUnicode, {0x1111}, "⡇"}
+		,{"4th", convBrailleToUnicode, {0x1023}, "⣡"}
+		,{"5th", convBrailleToUnicode, {0x0223}, "⣰"}
+	}
+
+	if not doTests("convBrailleToUnicode", convBrailleToUnicodeTests) then
+		return
+	end
+
 	function bitmapDrawBorder(width, height, borderThickness)
 		local bmp = Bitmap:new(width, height)
 
