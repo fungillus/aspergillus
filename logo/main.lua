@@ -6,8 +6,11 @@ require("animation")
 
 function Init()
 	--print "\x1b[25l"
+	local screenCol, screenRow = extra.getConsoleSize()
+	local leftOffset = screenCol - 45
+	local topOffset = screenRow - 15
 	console.clearScreen()
-	screen = Bitmap:new(128, 110)
+	screen = Bitmap:new(screenCol * 2, screenRow * 4)
 
 	local fonts = Fonts:new()
 
@@ -129,27 +132,27 @@ function Init()
 ]])
 
 	animations = {}
-	table.insert(animations, Animate:new(sparkAnim2, 5, {x= 20, y = 20}, extra.getTickCount() + 130))
-	table.insert(animations, Animate:new(sparkAnim2, 5, {x= 41, y = 45}, extra.getTickCount() + 20))
-	table.insert(animations, Animate:new(sparkAnim2, 5, {x= 50, y = 2}, extra.getTickCount() + 70))
-	table.insert(animations, Animate:new(sparkAnim2, 5, {x= 72, y = 50}, extra.getTickCount() + 170))
-	table.insert(animations, Animate:new(sparkAnim2, 5, {x= 30, y = 12}, extra.getTickCount() + 40))
-	table.insert(animations, Animate:new(sparkAnim2, 5, {x= 62, y = 25}, extra.getTickCount() + 150))
+	table.insert(animations, Animate:new(sparkAnim2, 5, {x= leftOffset + 20, y = topOffset + 20}, extra.getTickCount() + 130))
+	table.insert(animations, Animate:new(sparkAnim2, 5, {x= leftOffset + 41, y = topOffset + 45}, extra.getTickCount() + 20))
+	table.insert(animations, Animate:new(sparkAnim2, 5, {x= leftOffset + 50, y = topOffset + 2}, extra.getTickCount() + 70))
+	table.insert(animations, Animate:new(sparkAnim2, 5, {x= leftOffset + 72, y = topOffset + 50}, extra.getTickCount() + 170))
+	table.insert(animations, Animate:new(sparkAnim2, 5, {x= leftOffset + 30, y = topOffset + 12}, extra.getTickCount() + 40))
+	table.insert(animations, Animate:new(sparkAnim2, 5, {x= leftOffset + 62, y = topOffset + 25}, extra.getTickCount() + 150))
 
 	endTime = extra.getTickCount() + 400
 
-	table.insert(animations, Animate:new(fungillusLogo, 5, {x=35, y=20}, extra.getTickCount() + 50))
+	table.insert(animations, Animate:new(fungillusLogo, 5, {x= leftOffset +35, y= topOffset +20}, extra.getTickCount() + 50))
 
 	local gameMakerName = "Fungillus"
 	local gameMakerNameBitmap = Bitmap:new(#gameMakerName * fonts:getCharacterWidth(), fonts:getCharacterHeight())
 	fonts:printText(gameMakerNameBitmap, {x=0, y=0}, gameMakerName)
-	table.insert(animations, Animate:new({gameMakerNameBitmap}, 250, {x=20, y=40}, extra.getTickCount() + 220))
+	table.insert(animations, Animate:new({gameMakerNameBitmap}, 250, {x= leftOffset +20, y= topOffset +40}, extra.getTickCount() + 220))
 
-	table.insert(animations, Animate:new(funkyAnim, 5, {x=20, y=40}, extra.getTickCount() + 30))
-	table.insert(animations, Animate:new(funkyAnim, 5, {x=28, y=40}, extra.getTickCount() + 60))
-	table.insert(animations, Animate:new(funkyAnim, 5, {x=34, y=40}, extra.getTickCount() + 90))
-	table.insert(animations, Animate:new(funkyAnim, 5, {x=40, y=40}, extra.getTickCount() + 120))
-	table.insert(animations, Animate:new(funkyAnim, 5, {x=48, y=40}, extra.getTickCount() + 150))
+	table.insert(animations, Animate:new(funkyAnim, 5, {x= leftOffset +20, y= topOffset +40}, extra.getTickCount() + 30))
+	table.insert(animations, Animate:new(funkyAnim, 5, {x= leftOffset +28, y= topOffset +40}, extra.getTickCount() + 60))
+	table.insert(animations, Animate:new(funkyAnim, 5, {x= leftOffset +34, y= topOffset +40}, extra.getTickCount() + 90))
+	table.insert(animations, Animate:new(funkyAnim, 5, {x= leftOffset +40, y= topOffset +40}, extra.getTickCount() + 120))
+	table.insert(animations, Animate:new(funkyAnim, 5, {x= leftOffset +48, y= topOffset +40}, extra.getTickCount() + 150))
 end
 
 function quit()
