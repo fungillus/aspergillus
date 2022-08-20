@@ -69,6 +69,14 @@ function Init()
 ⣿        ⣿
 ⣿⣤⣤⣤⣤⣤⣤⣤⣤⣿
 ]]}
+
+		,{"twenty by twenty 3 pixels thick", bitmapDrawBorder, {20, 20, 3}, [[
+⣿⡿⠿⠿⠿⠿⠿⠿⢿⣿
+⣿⡇      ⢸⣿
+⣿⡇      ⢸⣿
+⣿⡇      ⢸⣿
+⣿⣷⣶⣶⣶⣶⣶⣶⣾⣿
+]]}
 	}
 
 	if not doTests("BitmapDrawBorder", BitmapDrawBorderTests) then
