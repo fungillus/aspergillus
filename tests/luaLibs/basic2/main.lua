@@ -79,7 +79,7 @@ function Init()
 ]]}
 	}
 
-	if not doTests("BitmapDrawBorder", BitmapDrawBorderTests) then
+	if not doTests("Bitmap:drawBorder", BitmapDrawBorderTests) then
 		return
 	end
 end
