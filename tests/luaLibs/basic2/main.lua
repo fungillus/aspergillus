@@ -82,6 +82,82 @@ function Init()
 	if not doTests("Bitmap:drawBorder", BitmapDrawBorderTests) then
 		return
 	end
+
+	function bitmapGetPixel(x, y, width, height, dataBuffer)
+		local bmp = Bitmap:new(width, height)
+
+		bmp.data = dataBuffer
+
+		return bmp:getPixel(x, y)
+	end
+
+	-- for the braille renderer, the data buffer encodes pixels inside 2x4 items
+	-- we use this function to inject all coordinates in the test width by height dataBuffer
+	-- and expect only a single coordinate to have the value 1, the rest must have the value 0
+	function injectGetPixelTests(testList, description, width, height, dataBuffer, coordinateOfSetPixel)
+		local expectedValue = 0
+		for y = 0, height - 1 do
+			for x = 0, width - 1 do
+				if coordinateOfSetPixel.x == x and coordinateOfSetPixel.y == y then
+					expectedValue = 1
+				else
+					expectedValue = 0
+				end
+				table.insert(testList
+					, {
+						string.format("%s (%d,%d)", description, x, y)
+						, bitmapGetPixel
+						, {x, y, width, height, dataBuffer}
+						, expectedValue
+					})
+			end
+		end
+	end
+
+	local BitmapGetPixelTests = {}
+
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x1000", 2, 4, {0x1000}, {x=0, y=0})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x2000", 2, 4, {0x2000}, {x=1, y=0})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0100", 2, 4, {0x0100}, {x=0, y=1})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0200", 2, 4, {0x0200}, {x=1, y=1})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0010", 2, 4, {0x0010}, {x=0, y=2})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0020", 2, 4, {0x0020}, {x=1, y=2})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0001", 2, 4, {0x0001}, {x=0, y=3})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0002", 2, 4, {0x0002}, {x=1, y=3})
+
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x1000", 4, 8,
+		{0x0000, 0x0000, 0x0000, 0x1000}, {x=2, y=4})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x2000", 4, 8,
+		{0x0000, 0x0000, 0x0000, 0x2000}, {x=3, y=4})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0100", 4, 8,
+		{0x0000, 0x0000, 0x0000, 0x0100}, {x=2, y=5})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0200", 4, 8,
+		{0x0000, 0x0000, 0x0000, 0x0200}, {x=3, y=5})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0010", 4, 8,
+		{0x0000, 0x0000, 0x0000, 0x0010}, {x=2, y=6})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0020", 4, 8,
+		{0x0000, 0x0000, 0x0000, 0x0020}, {x=3, y=6})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0001", 4, 8,
+		{0x0000, 0x0000, 0x0000, 0x0001}, {x=2, y=7})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0002", 4, 8,
+		{0x0000, 0x0000, 0x0000, 0x0002}, {x=3, y=7})
+
+	table.insert(BitmapGetPixelTests, {"on nil dataBuffer", bitmapGetPixel, {0, 0, 2, 4, {}}, 0})
+	table.insert(BitmapGetPixelTests, {"spot check 1", bitmapGetPixel, {0, 0, 2, 4, {0x2013}}, 0})
+	table.insert(BitmapGetPixelTests, {"spot check 2", bitmapGetPixel, {1, 0, 2, 4, {0x2013}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 3", bitmapGetPixel, {0, 1, 2, 4, {0x2013}}, 0})
+	table.insert(BitmapGetPixelTests, {"spot check 4", bitmapGetPixel, {0, 2, 2, 4, {0x2013}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 5", bitmapGetPixel, {0, 3, 2, 4, {0x2013}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 6", bitmapGetPixel, {1, 3, 2, 4, {0x2013}}, 1})
+
+	table.insert(BitmapGetPixelTests, {"spot check 7", bitmapGetPixel, {3, 5, 4, 8, {0x2013, 0x0000, 0x3100, 0x0031}}, 0})
+	table.insert(BitmapGetPixelTests, {"spot check 8", bitmapGetPixel, {3, 6, 4, 8, {0x2013, 0x0000, 0x3100, 0x0031}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 9", bitmapGetPixel, {2, 6, 4, 8, {0x2013, 0x0000, 0x3100, 0x0031}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 10", bitmapGetPixel, {1, 6, 4, 8, {0x2013, 0x0000, 0x3100, 0x0031}}, 0})
+
+	if not doTests("Bitmap:getPixel", BitmapGetPixelTests) then
+		return
+	end
 end
 
 function Poll()
