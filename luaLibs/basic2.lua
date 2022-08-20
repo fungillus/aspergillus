@@ -83,11 +83,7 @@ function Bitmap:getPixel(x, y)
 	local x1=math.floor(x / 2) + 1
 	local y1=math.floor(y / 4)
 	local coord=x1 + (y1 * self.realWidth)
-	local value=self.data[coord] 
-
-	if (value == nil) then
-		value = 0
-	end
+	local value=self.data[coord] or 0
 
 	-- coordinate system
 	--  01 23 45 67
@@ -120,11 +116,7 @@ function Bitmap:putPixel(x, y, pixel)
 	local x1=math.floor(x / 2) + 1
 	local y1=math.floor(y / 4)
 	local coord=x1 + (y1 * self.realWidth)
-	local value=self.data[coord] 
-
-	if (value == nil) then
-		value = 0
-	end
+	local value=self.data[coord] or 0
 
 	if ( pixel >= 1) then
 		pixel = 1
