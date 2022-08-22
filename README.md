@@ -8,7 +8,7 @@ clone this repository recursively to get all the submodules.
 Like so :
 
 ```
-git clone --recurse https://github.com/fungillus/libaspergillus
+git clone --recurse https://github.com/fungillus/aspergillus
 ```
 
 To compile
