@@ -91,8 +91,8 @@ function Init()
 		return bmp:getPixel(x, y)
 	end
 
-	-- for the braille renderer, the data buffer encodes pixels inside 2x4 items
-	-- we use this function to inject all coordinates in the test width by height dataBuffer
+	-- for the braille renderer, the data buffer encodes pixels inside 2x4 elements
+	-- we use this function to inject test entries for all coordinates in the dataBuffer
 	-- and expect only a single coordinate to have the value 1, the rest must have the value 0
 	function injectGetPixelTests(testList, description, width, height, dataBuffer, coordinateOfSetPixel)
 		local expectedValue = 0
