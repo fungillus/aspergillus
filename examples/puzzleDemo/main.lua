@@ -118,42 +118,42 @@ function Init()
 	frames = {}
 
 	table.insert(frames, {
-		{{}, {}, {}, {three = "down", exit = "up"}}
+		{{}, {}, {}, {three = "down"}}
 		,{{}, {three = "left"}, {one = "bmp"}, {two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{}, {}, {one = "bmp"}, {three = "down", exit = "up"}}
+		{{}, {}, {one = "bmp"}, {three = "down"}}
 		,{{}, {three = "left"}, {}, {two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{}, {one = "bmp"}, {}, {three = "down", exit = "up"}}
+		{{}, {one = "bmp"}, {}, {three = "down"}}
 		,{{}, {three = "left"}, {}, {two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{one = "bmp"}, {}, {}, {three = "down", exit = "up"}}
+		{{one = "bmp"}, {}, {}, {three = "down"}}
 		,{{}, {three = "left"}, {}, {two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{}, {}, {}, {three = "down", exit = "up"}}
+		{{}, {}, {}, {three = "down"}}
 		,{{one = "bmp"}, {three = "left"}, {}, {two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{}, {}, {}, {three = "down", exit = "up"}}
+		{{}, {}, {}, {three = "down"}}
 		,{{}, {one = "bmp", three = "left"}, {}, {two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{}, {}, {}, {three = "down", exit = "up"}}
+		{{}, {}, {}, {three = "down"}}
 		,{{}, {}, {one = "bmp", three = "left"}, {two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{}, {}, {one = "bmp", three = "left"}, {three = "down", exit = "up"}}
+		{{}, {}, {one = "bmp", three = "left"}, {three = "down"}}
 		,{{}, {}, {}, {two = "left"}}
 	})
 
@@ -161,69 +161,74 @@ function Init()
 	specialResetFrameIndex = #frames
 
 	table.insert(frames, {
-		{{}, {}, {}, {three = "down", exit = "up"}}
+		{{}, {}, {}, {three = "down"}}
 		,{{}, {three = "left"}, {}, {one = "bmp", two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{}, {}, {}, {three = "down", one = "bmp", two = "left", exit = "up"}}
+		{{}, {}, {}, {three = "down", one = "bmp", two = "left"}}
 		,{{}, {three = "left"}, {}, {}}
 	})
 
 	table.insert(frames, {
-		{{}, {}, {three = "down", one = "bmp", two = "left"}, {exit = "up"}}
+		{{}, {}, {three = "down", one = "bmp", two = "left"}, {}}
 		,{{}, {three = "left"}, {}, {}}
 	})
 
 	table.insert(frames, {
-		{{}, {three = "down", one = "bmp", two = "left"}, {}, {exit = "up"}}
+		{{}, {three = "down", one = "bmp", two = "left"}, {}, {}}
 		,{{}, {three = "left"}, {}, {}}
 	})
 
 	table.insert(frames, {
-		{{three = "down", one = "bmp", two = "left"}, {}, {}, {exit = "up"}}
+		{{three = "down", one = "bmp", two = "left"}, {}, {}, {}}
 		,{{}, {three = "left"}, {}, {}}
 	})
 
 	table.insert(frames, {
-		{{three = "down"}, {}, {}, {exit = "up"}}
+		{{three = "down"}, {}, {}, {}}
 		,{{one = "bmp", two = "left"}, {three = "left"}, {}, {}}
 	})
 
 	table.insert(frames, {
-		{{three = "down"}, {}, {}, {exit = "up"}}
+		{{three = "down"}, {}, {}, {}}
 		,{{}, {three = "left", one = "bmp", two = "left"}, {}, {}}
 	})
 
 	table.insert(frames, {
-		{{three = "down"}, {}, {}, {exit = "up"}}
+		{{three = "down"}, {}, {}, {}}
 		,{{}, {}, {three = "left", one = "bmp", two = "left"}, {}}
 	})
 
 	table.insert(frames, {
-		{{three = "down"}, {}, {}, {exit = "up"}}
+		{{three = "down"}, {}, {}, {}}
 		,{{}, {}, {}, {three = "left", one = "bmp", two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{three = "down"}, {}, {}, {exit = "up"}}
+		{{three = "down"}, {}, {}, {}}
 		,{{}, {}, {one = "bmp"}, {three = "left", two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{three = "down"}, {}, {one = "bmp"}, {exit = "up"}}
+		{{three = "down"}, {}, {one = "bmp"}, {}}
 		,{{}, {}, {}, {three = "left", two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{three = "down"}, {}, {}, {one = "bmp", exit = "up"}}
+		{{three = "down"}, {}, {}, {one = "bmp"}}
 		,{{}, {}, {}, {three = "left", two = "left"}}
 	})
 
 	table.insert(frames, {
-		{{three = "down"}, {}, {}, {exit = "up"}}
+		{{three = "down"}, {}, {}, {}}
 		,{{}, {}, {}, {three = "left", two = "left"}}
 	})
+
+	-- set the exit tile for all frames
+	for i, frame in pairs(frames) do
+		frame[1][4].exit = "up"
+	end
 
 	--[[
 	for i = 0, 3 do screen:blit(square, 30 + tileSize * i, 30) end
