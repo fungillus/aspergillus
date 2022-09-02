@@ -6,7 +6,7 @@ require("convertImage")
 
 Menu = {drawContext = nil, entries = nil, drawBitmaps = nil, currentPage = nil, coordinate = nil, arrowBitmaps = nil, alignment = nil, buttonPressTimeout = nil, buttonTimeouts = nil}
 
-function Menu:new(drawContext, coordinate, menuEntries)
+function Menu:new(drawContext, coordinate, menuEntries, o)
 	o = o or {}
 	o.drawContext = {screen=drawContext.screen, fonts=drawContext.fonts or Fonts:new()}
 	o.entries = menuEntries or {}
@@ -95,7 +95,7 @@ function Menu:_populateMenuEntries()
 
 	local isFirst = true
 	local alignment = self.alignment
-	for entryIndex, currentEntry in pairs(o.entries) do
+	for entryIndex, currentEntry in pairs(self.entries) do
 		if currentEntry.selected == true then
 			borderSize = baseBorderSize + 1
 		else
@@ -111,7 +111,7 @@ function Menu:_populateMenuEntries()
 
 			calculatedXCoordinate = alignmentCalculation(self.drawContext.screen, entryImg, baseCoordinates.x, maxXCoordinate, alignment)
 
-			table.insert(o.drawnMenuObjects, {bitmap = entryImg, coordinate = {x = calculatedXCoordinate, y = baseCoordinates.y}})
+			table.insert(self.drawnMenuObjects, {bitmap = entryImg, coordinate = {x = calculatedXCoordinate, y = baseCoordinates.y}})
 
 			baseCoordinates.y = baseCoordinates.y + entryImg.height + 2
 
