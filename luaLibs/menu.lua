@@ -264,15 +264,15 @@ function Menu:handleInputs()
 		return
 	elseif currentButtons & buttons.kButtonUp == buttons.kButtonUp then
 		if handleTimeout(self.buttonsPressNextTimeout, "buttonUp", self.buttonsPressTimeout) then
-			menuContext:selectPrevious()
+			self:selectPrevious()
 		end
 	elseif currentButtons & buttons.kButtonDown == buttons.kButtonDown then
 		if handleTimeout(self.buttonsPressNextTimeout, "buttonDown", self.buttonsPressTimeout) then
-			menuContext:selectNext()
+			self:selectNext()
 		end
 	elseif currentButtons & buttons.kButtonA == buttons.kButtonA then
 		if handleTimeout(self.buttonsPressNextTimeout, "buttonA", self.buttonsPressTimeout + 100) then
-			menuContext:trigger()
+			self:trigger()
 		end
 	end
 end
