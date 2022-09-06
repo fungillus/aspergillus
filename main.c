@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 	int targetFramesPerSecond = 30;
 	int programStartTime = getTickCount();
 	int tick = 0;
-	char mainLuaPath[2048];
+	char luaGamePath[2048];
 
 	if (!luaCtx) {
 		printf("Error allocating lua state\n");
@@ -108,12 +108,17 @@ int main(int argc, char **argv) {
 	}
 
 	if (argc > 1) {
-		snprintf(mainLuaPath, 2048, "%s/main.lua", argv[1]);
-	} else {
-		strcpy(mainLuaPath, "main.lua");
-	}
+		char luaPathEnvBuffer[2048 * 2];
+		unsigned int len;
+		snprintf(luaGamePath, 2048, "%s/main.lua", argv[1]);
+		strcpy(luaPathEnvBuffer, LUA_PATH);
 
-	setenv("LUA_PATH", LUA_PATH, 1);
+		snprintf(&luaPathEnvBuffer[strlen(LUA_PATH)], 2048, ";%s/?.lua", argv[1]);
+		setenv("LUA_PATH", luaPathEnvBuffer, 1);
+	} else {
+		strcpy(luaGamePath, "main.lua");
+		setenv("LUA_PATH", LUA_PATH, 1);
+	}
 
 	jsContext = joystick_Create();
 
@@ -127,7 +132,7 @@ int main(int argc, char **argv) {
 
 	setCFunctions(luaCtx);
 
-	if (luaL_dofile(luaCtx, mainLuaPath) != 0) {
+	if (luaL_dofile(luaCtx, luaGamePath) != 0) {
 		const char *msg = lua_tostring(luaCtx, -1);
 		lua_pop(luaCtx, -1);
 		printf("Error in the script file main.lua -> %s\n", msg);
