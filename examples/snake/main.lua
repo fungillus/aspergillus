@@ -29,7 +29,7 @@ function Apple:new(bitmapParent, positionX, positionY, o)
 	-- ** 
 	-- ** 
 	--    
-	o.bitmap.data = {
+	o.bitmap.core.data = {
 		0x0220, 0x0110
 	}
 
@@ -64,7 +64,7 @@ function Apples:new(bitmapParent, o)
 	o.bitmapParent = bitmapParent
 
 	o.appleCollisionMap = {}
-	for i = 1, bitmapParent.height do
+	for i = 1, bitmapParent:getSize().height do
 		o.appleCollisionMap[i] = {}
 	end
 
@@ -164,7 +164,7 @@ function Snake:new(bitmap, startX, startY, o)
 	--****
 	--****
 	-- ** 
-	o.bitmap.data = {
+	o.bitmap.core.data = {
 		0x2332, 0x1331
 	}
 
