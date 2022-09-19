@@ -114,7 +114,7 @@ Util_CheckPipeAvail(int connection, int type, int timeout_sec, int timeout_usec)
 
 static void
 showEvent(struct js_event *e) {
-	printf("time %d value %d type %d number %d\n"
+	fprintf(stderr, "time %d value %d type %d number %d\n"
 		, e->time
 		, e->value
 		, e->type
@@ -183,12 +183,16 @@ joystick_Poll(JsState *state) {
 
 	/* printf("awaiting for the pipe to be available\n"); */
 	err = Util_CheckPipeAvail(fileno(state->joystickFd), 0, 0, 30);
-	/* printf("joystick poll : result is %d\n", err); */
+	if (debugging) fprintf(stderr, "joystick_Poll : %d epoll result is %d\n", getTickCount(), err);
 
 	if (err <= 0)
 		return;
 
 	result = fread(&joystickEvent, sizeof(struct js_event), 1, state->joystickFd);
+
+	if (debugging) {
+		showEvent(&joystickEvent);
+	}
 
 	if (result > 0) {
 		if (joystickEvent.type == 1) {
@@ -232,7 +236,7 @@ joystick_Poll(JsState *state) {
 				default:
 				{
 					if (debugging)
-						printf("Unhandled event : %d\n", joystickEvent.number);
+						fprintf(stderr, "Unhandled event : %d\n", joystickEvent.number);
 					break;
 				}
 			}
@@ -267,13 +271,13 @@ joystick_Poll(JsState *state) {
 				default:
 				{
 					if (debugging)
-						printf("Unhandled event : %d value : %d \n", joystickEvent.number, joystickEvent.value);
+						fprintf(stderr, "Unhandled event : %d value : %d \n", joystickEvent.number, joystickEvent.value);
 					break;
 				}
 			}
 		} else {
 			if (debugging)
-				printf("Unhandled type : %d event : %d\n", joystickEvent.type, joystickEvent.number);
+				fprintf(stderr, "Unhandled type : %d event : %d\n", joystickEvent.type, joystickEvent.number);
 		}
 		/* showEvent(&joystickEvent); */
 	}
