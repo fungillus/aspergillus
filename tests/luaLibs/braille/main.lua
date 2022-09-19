@@ -1,4 +1,26 @@
+--[[
 
+this test file is for the library braille.lua
+
+functions to test :
+
+convRawUnicodeValueToUnicode
+convBrailleToRawUnicodeValue
+convBrailleToUnicode
+Bitmap:getPixel
+Bitmap:drawBorder
+
+Bitmap:clear
+Bitmap:putPixel
+Bitmap:marshalRow
+Bitmap:getBuffer
+Bitmap:draw
+Bitmap:blit
+Bitmap:blitSection
+Bitmap:blitReverse
+Bitmap:isRectangleEmpty
+
+--]]
 
 function Init()
 	local convRawUnicodeValueToUnicodeTests = {
