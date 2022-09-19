@@ -8,10 +8,10 @@ convRawUnicodeValueToUnicode
 convBrailleToRawUnicodeValue
 convBrailleToUnicode
 Bitmap:getPixel
+Bitmap:putPixel
 Bitmap:drawBorder
 
 Bitmap:clear
-Bitmap:putPixel
 Bitmap:marshalRow
 Bitmap:getBuffer
 Bitmap:draw
