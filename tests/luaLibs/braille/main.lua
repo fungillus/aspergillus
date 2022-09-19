@@ -22,7 +22,7 @@ Bitmap:isRectangleEmpty
 
 --]]
 
-function Init()
+function testConvRawUnicodeValueToUnicode()
 	local convRawUnicodeValueToUnicodeTests = {
 		{"first", convRawUnicodeValueToUnicode, {0x28FF}, "⣿"}
 		,{"second", convRawUnicodeValueToUnicode, {0x2807}, "⠇"}
@@ -32,9 +32,13 @@ function Init()
 	}
 
 	if not doTests("convRawUnicodeValueToUnicode", convRawUnicodeValueToUnicodeTests) then
-		return
+		return false
+	else
+		return true
 	end
+end
 
+function testConvBrailleToRawUnicodeValue()
 	local convBrailleToRawUnicodeValueTests = {
 		{"1st", convBrailleToRawUnicodeValue, {0x3333}, 0x28FF}
 		,{"2nd", convBrailleToRawUnicodeValue, {0x1110}, 0x2807}
@@ -44,9 +48,13 @@ function Init()
 	}
 
 	if not doTests("convBrailleToRawUnicodeValue", convBrailleToRawUnicodeValueTests) then
-		return
+		return false
+	else
+		return true
 	end
+end
 
+function testConvBrailleToUnicode()
 	local convBrailleToUnicodeTests = {
 		{"1st", convBrailleToUnicode, {0x3333}, "⣿"}
 		,{"2nd", convBrailleToUnicode, {0x1110}, "⠇"}
@@ -56,9 +64,13 @@ function Init()
 	}
 
 	if not doTests("convBrailleToUnicode", convBrailleToUnicodeTests) then
-		return
+		return false
+	else
+		return true
 	end
+end
 
+function testBitmapDrawBorder()
 	function bitmapDrawBorder(width, height, borderThickness)
 		local bmp = Bitmap:new(width, height)
 
@@ -102,13 +114,17 @@ function Init()
 	}
 
 	if not doTests("Bitmap:drawBorder", BitmapDrawBorderTests) then
-		return
+		return false
+	else
+		return true
 	end
+end
 
+function testBitmapGetPixel()
 	function bitmapGetPixel(x, y, width, height, dataBuffer)
 		local bmp = Bitmap:new(width, height)
 
-		bmp.data = dataBuffer
+		bmp.core.data = dataBuffer
 
 		return bmp:getPixel(x, y)
 	end
@@ -178,8 +194,23 @@ function Init()
 	table.insert(BitmapGetPixelTests, {"spot check 10", bitmapGetPixel, {1, 6, 4, 8, {0x2013, 0x0000, 0x3100, 0x0031}}, 0})
 
 	if not doTests("Bitmap:getPixel", BitmapGetPixelTests) then
-		return
+		return false
+	else
+		return true
 	end
+end
+
+
+function Init()
+	if not testConvRawUnicodeValueToUnicode() then return end
+
+	if not testConvBrailleToRawUnicodeValue() then return end
+
+	if not testConvBrailleToUnicode() then return end
+
+	if not testBitmapDrawBorder() then return end
+
+	if not testBitmapGetPixel() then return end
 end
 
 function Poll()
