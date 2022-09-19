@@ -87,6 +87,7 @@ end
 function Menu:_populateMenuEntries()
 	local currentEntry = nil
 	local entryImg = nil
+	local entryImgSize = nil
 	local baseBorderSize = 1
 	local borderSize = nil
 	local baseCoordinates = {x = self.coordinate.x, y = self.coordinate.y}
@@ -103,17 +104,18 @@ function Menu:_populateMenuEntries()
 		end
 		if currentEntry.type == "button" then
 			entryImg = _createButton(self.drawContext.fonts, {drawBorder = true, borderSize = borderSize}, currentEntry.name)
+			entryImgSize = entryImg:getSize()
 
 			if isFirst then
 				baseCoordinates.x = giveMiddlePoint(self.drawContext.screen, entryImg)
-				maxXCoordinate = baseCoordinates.x + entryImg.width
+				maxXCoordinate = baseCoordinates.x + entryImgSize.width
 			end
 
 			calculatedXCoordinate = alignmentCalculation(self.drawContext.screen, entryImg, baseCoordinates.x, maxXCoordinate, alignment)
 
 			table.insert(self.drawnMenuObjects, {bitmap = entryImg, coordinate = {x = calculatedXCoordinate, y = baseCoordinates.y}})
 
-			baseCoordinates.y = baseCoordinates.y + entryImg.height + 2
+			baseCoordinates.y = baseCoordinates.y + entryImgSize.height + 2
 
 			if isFirst then
 				isFirst = false
@@ -172,12 +174,13 @@ function _createButton(fonts, config, text)
 end
 
 function giveMiddlePoint(primaryBitmap, secondaryBitmap)
-	return (primaryBitmap.width / 2) - (secondaryBitmap.width / 2)
+	return (primaryBitmap:getSize().width / 2) - (secondaryBitmap:getSize().width / 2)
 end
 
 -- alignment is : centered, left or right
 function alignmentCalculation(screen, image, baseXCoordinate, maxXCoordinate, alignment)
 	local result = 0
+	local imageSize = image:getSize()
 	if alignment == "centered" then
 		result = giveMiddlePoint(screen, image)
 	elseif alignment == "left" then
@@ -185,7 +188,7 @@ function alignmentCalculation(screen, image, baseXCoordinate, maxXCoordinate, al
 	elseif alignment == "right" then
 		-- the goal is : baseXCoordinate + x + image.width == maxXCoordinate
 		-- 		 x = maxXCoordinate - (baseXCoordinate + image.width)
-		result = baseXCoordinate + (maxXCoordinate - (baseXCoordinate + image.width))
+		result = baseXCoordinate + (maxXCoordinate - (baseXCoordinate + imageSize.width))
 	else
 		result = alignmentCalculation(screen, image, "left")
 	end
