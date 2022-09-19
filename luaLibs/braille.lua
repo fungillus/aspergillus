@@ -1,4 +1,6 @@
 
+-- this is a private core driver, it should not be used directly
+
 require("console")
 
 function convRawUnicodeValueToUnicode(unicodeCharacter)
@@ -46,7 +48,7 @@ function convBrailleToUnicode(brailleNumber)
 			+ brailleLayers[2][((brailleNumber & 0x0f00) >> 8) + 1]
 			+ brailleLayers[3][((brailleNumber & 0x00f0) >> 4) + 1]
 			+ brailleLayers[4][(brailleNumber & 0x000f) + 1]
-	
+
 	local digit3 = (baseValue & 0xf0) >> 4
 	local digit4 = baseValue & 0x0f
 
@@ -65,9 +67,9 @@ function fillLine(width, unicodeCharacter)
 	return result
 end
 
-Bitmap = {width = nil, height = nil, realWidth = nil, realHeight = nil, data = nil}
+Braille = {width = nil, height = nil, realWidth = nil, realHeight = nil, data = nil}
 
-function Bitmap:new(width, height, o)
+function Braille:new(width, height, o)
 	o = o or {}
 	o.width = width
 	o.height = height
@@ -79,7 +81,11 @@ function Bitmap:new(width, height, o)
 	return o
 end
 
-function Bitmap:getPixel(x, y)
+function Braille:clear()
+	self.data = {}
+end
+
+function Braille:getPixel(x, y)
 	local x1=math.floor(x / 2) + 1
 	local y1=math.floor(y / 4)
 	local coord=x1 + (y1 * self.realWidth)
@@ -112,7 +118,7 @@ function Bitmap:getPixel(x, y)
 	return convChart[convertedCoord](value)
 end
 
-function Bitmap:putPixel(x, y, pixel)
+function Braille:putPixel(x, y, pixel)
 	local x1=math.floor(x / 2) + 1
 	local y1=math.floor(y / 4)
 	local coord=x1 + (y1 * self.realWidth)
@@ -143,7 +149,7 @@ function Bitmap:putPixel(x, y, pixel)
 	self.data[coord] = convChart[convertedCoord](value)
 end
 
-function Bitmap:marshalRow(rowNumber)
+function Braille:marshalRow(rowNumber)
 	local width = self.realWidth
 
 	local result = ""
@@ -161,7 +167,7 @@ function Bitmap:marshalRow(rowNumber)
 	return result
 end
 
-function Bitmap:getBuffer()
+function Braille:getBuffer()
 	local height = self.realHeight
 	local result = ""
 
@@ -172,7 +178,7 @@ function Bitmap:getBuffer()
 	return result
 end
 
-function Bitmap:draw()
+function Braille:draw()
 	local height = self.realHeight
 
 	for h = 0, height - 1 do
@@ -183,15 +189,14 @@ function Bitmap:draw()
 	io.flush()
 end
 
-function Bitmap:blit(bitmap, x, y)
-	local height = bitmap.height
-	local width = bitmap.width
+function Braille:blit(bitmap, x, y)
+	local bitmapSize = bitmap:getSize()
 
 	local initialX = x
 
-	for h = 0, height - 1 do
+	for h = 0, bitmapSize.height - 1 do
 		x = initialX
-		for w = 0, width - 1 do
+		for w = 0, bitmapSize.width - 1 do
 			self:putPixel(x, y, bitmap:getPixel(w, h))
 			x = x + 1
 		end
@@ -201,34 +206,35 @@ end
 
 -- sourceRectangle is a table like so : {x=nil, y=nil, width=nil, height=nil} where nil values are expected to be actual values
 -- if the full bitmap is to be blit, just pass nil to it.
-function Bitmap:blitSection(bitmap, destinationCoordinates, sourceRectangle)
+function Braille:blitSection(bitmap, destinationCoordinates, sourceRectangle)
+	local bitmapSize = bitmap:getSize()
 	local height = sourceRectangle.height
 	local width = sourceRectangle.width
-	if sourceRectangle.height > bitmap.height then
-		height = bitmap.height
+	if sourceRectangle.height > bitmapSize.height then
+		height = bitmapSize.height
 	end
-	if sourceRectangle.width > bitmap.width then
-		width = bitmap.width
+	if sourceRectangle.width > bitmapSize.width then
+		width = bitmapSize.width
 	end
 
-	if sourceRectangle.x > bitmap.width or sourceRectangle.y > bitmap.height then
+	if sourceRectangle.x > bitmapSize.width or sourceRectangle.y > bitmapSize.height then
 		print("Invalid out of bounds source rectangle coordinates given")
 		return
 	end
 
-	if sourceRectangle.y + sourceRectangle.height > bitmap.height then
-		height = sourceRectangle.y + sourceRectangle.height - bitmap.height
+	if sourceRectangle.y + sourceRectangle.height > bitmapSize.height then
+		height = sourceRectangle.y + sourceRectangle.height - bitmapSize.height
 	end
 
-	if sourceRectangle.x + sourceRectangle.width > bitmap.width then
-		width = sourceRectangle.x + sourceRectangle.width - bitmap.width
+	if sourceRectangle.x + sourceRectangle.width > bitmapSize.width then
+		width = sourceRectangle.x + sourceRectangle.width - bitmapSize.width
 	end
 
 	local initialX = destinationCoordinates.x
 	local x = 0
 	local y = destinationCoordinates.y
 
-	--print("blitSection", initialX, y, width, height, " bitmap height :", bitmap.height)
+	--print("blitSection", initialX, y, width, height, " bitmap height :", bitmapSize.height)
 	for h = sourceRectangle.y, sourceRectangle.y + height - 1 do
 		x = initialX
 		for w = sourceRectangle.x, sourceRectangle.x + width - 1 do
@@ -239,16 +245,15 @@ function Bitmap:blitSection(bitmap, destinationCoordinates, sourceRectangle)
 	end
 end
 
-function Bitmap:blitReverse(bitmap, x, y)
-	local height = bitmap.height
-	local width = bitmap.width
+function Braille:blitReverse(bitmap, x, y)
+	local bitmapSize = bitmap:getSize()
 
 	local initialX = x
 	local pixel = 0
 
-	for h = 0, height - 1 do
+	for h = 0, bitmapSize.height - 1 do
 		x = initialX
-		for w = 0, width - 1 do
+		for w = 0, bitmapSize.width - 1 do
 			pixel = bitmap:getPixel(w, h)
 			if pixel == 1 then
 				pixel = 0
@@ -260,7 +265,7 @@ function Bitmap:blitReverse(bitmap, x, y)
 	end
 end
 
-function Bitmap:isRectangleEmpty(startX, startY, width, height)
+function Braille:isRectangleEmpty(startX, startY, width, height)
 	for y = startY, height + startY do
 		for x = startX, width + startX do
 			if self:getPixel(x, y) ~= 0 then
@@ -271,7 +276,7 @@ function Bitmap:isRectangleEmpty(startX, startY, width, height)
 	return true
 end
 
-function Bitmap:drawBorder(borderSize)
+function Braille:drawBorder(borderSize)
 	-- up
 	for x = 0, self.width - 1 do
 		for y = 0, borderSize - 1 do
