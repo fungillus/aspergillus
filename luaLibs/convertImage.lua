@@ -82,7 +82,7 @@ end
 
 function convertBrailleToImage(braille)
 	local result = Bitmap:new(braille.width, braille.height)
-	result.data = braille.data
+	result.core.data = braille.data
 	return result
 end
 
