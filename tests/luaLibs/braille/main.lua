@@ -200,6 +200,67 @@ function testBitmapGetPixel()
 	end
 end
 
+function testBitmapPutPixel()
+	-- at this point, we know that getPixel works according to specs so we can use it.
+	local width = 30
+	local height = 30
+	local bmp = Bitmap:new(width, height)
+
+	function testPutPixel(bmp, toCheckCoord)
+		local result = true
+		local pixelValue = 0
+		local foundCheckCoord = false
+		local bmpSize = bmp:getSize()
+		bmp:putPixel(toCheckCoord.x, toCheckCoord.y, 1)
+		for y = 0, bmpSize.height - 1 do
+			for x = 0, bmpSize.width - 1 do
+				pixelValue = bmp:getPixel(x, y)
+
+				if toCheckCoord.x == x and toCheckCoord.y == y then
+					if pixelValue == 0 then
+						result = false
+					else
+						foundCheckCoord = true
+					end
+				else
+					if pixelValue == 1 then result = false end
+				end
+			end
+		end
+		bmp:putPixel(toCheckCoord.x, toCheckCoord.y, 0)
+
+		if foundCheckCoord == false then
+			result = false
+		end
+
+		return result
+	end
+
+	local tests = {
+		{"Spot check 1", testPutPixel, {bmp, {x = 20, y = 20}}, true}
+		,{"Spot check 2", testPutPixel, {bmp, {x = 29, y = 29}}, true}
+		,{"Out of bound check", testPutPixel, {bmp, {x = 60, y = 60}}, false}
+		,{"Out of bound check 2", testPutPixel, {bmp, {x = 30, y = 30}}, false}
+		,{"X check", testPutPixel, {bmp, {x = 29, y = 0}}, true}
+		,{"X check out of bound", testPutPixel, {bmp, {x = 30, y = 0}}, false}
+		,{"Y check", testPutPixel, {bmp, {x = 0, y = 29}}, true}
+		,{"Y check out of bound", testPutPixel, {bmp, {x = 0, y = 30}}, false}
+		,{"Single block check 0,0", testPutPixel, {bmp, {x = 0, y = 0}}, true}
+		,{"Single block check 1,0", testPutPixel, {bmp, {x = 1, y = 0}}, true}
+		,{"Single block check 0,1", testPutPixel, {bmp, {x = 0, y = 1}}, true}
+		,{"Single block check 1,1", testPutPixel, {bmp, {x = 1, y = 1}}, true}
+		,{"Single block check 0,2", testPutPixel, {bmp, {x = 0, y = 2}}, true}
+		,{"Single block check 1,2", testPutPixel, {bmp, {x = 1, y = 2}}, true}
+		,{"Single block check 0,3", testPutPixel, {bmp, {x = 0, y = 3}}, true}
+		,{"Single block check 1,3", testPutPixel, {bmp, {x = 1, y = 3}}, true}
+	}
+
+	if not doTests("Bitmap:putPixel", tests) then
+		return false
+	else
+		return true
+	end
+end
 
 function Init()
 	if not testConvRawUnicodeValueToUnicode() then return end
@@ -211,6 +272,8 @@ function Init()
 	if not testBitmapDrawBorder() then return end
 
 	if not testBitmapGetPixel() then return end
+
+	if not testBitmapPutPixel() then return end
 end
 
 function Poll()
