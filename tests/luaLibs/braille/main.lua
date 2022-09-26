@@ -163,7 +163,7 @@ function testBitmapMarshalRow()
      ]]}
 	}
 
-	if not doTests("marshalRow", tests) then
+	if not doTests("Bitmap:marshalRow", tests) then
 		return false
 	else
 		return true
