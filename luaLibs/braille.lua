@@ -153,10 +153,10 @@ function Braille:marshalRow(rowNumber)
 	local width = self.realWidth
 
 	local result = ""
-	local coord = 0
+	local coord = rowNumber * width
 	local blockValue = 0
 	for w = 0, width - 1 do
-		coord = (w + 1) + (rowNumber * width)
+		coord = coord + 1
 		blockValue = self.data[coord]
 		if blockValue == nil or blockValue == 0 then
 			result = result .. " "
