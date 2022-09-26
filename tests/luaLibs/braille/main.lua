@@ -10,10 +10,10 @@ convBrailleToUnicode
 Bitmap:getPixel
 Bitmap:putPixel
 Bitmap:marshalRow
+Bitmap:getBuffer
 Bitmap:drawBorder
 
 Bitmap:clear
-Bitmap:getBuffer
 Bitmap:draw
 Bitmap:blit
 Bitmap:blitSection
@@ -164,6 +164,101 @@ function testBitmapMarshalRow()
 	}
 
 	if not doTests("Bitmap:marshalRow", tests) then
+		return false
+	else
+		return true
+	end
+end
+
+function testBitmapGetBuffer()
+	local mainBitmap = Bitmap:new(10, 16)
+
+	-- first row 
+	-- 0 to 3
+	-- all 3000
+	for x = 0, 10 - 1 do
+		mainBitmap:putPixel(x, 0, 1)
+	end
+
+	-- second row
+	-- 4 to 7
+	-- all 0300
+	for x = 0, 10 - 1 do
+		mainBitmap:putPixel(x, 5, 1)
+	end
+
+	-- third row
+	-- 8 to 11
+	-- all 0030
+	for x = 0, 10 - 1 do
+		mainBitmap:putPixel(x, 10, 1)
+	end
+
+	-- fourth row
+	-- 12 to 15
+	-- all 0003
+	for x = 0, 10 - 1 do
+		mainBitmap:putPixel(x, 15, 1)
+	end
+
+
+
+	local mainBitmap2 = Bitmap:new(10, 16)
+
+	-- first row 
+	-- 0 to 3
+	-- all 1000
+	for x = 0, 10 - 1, 2 do
+		mainBitmap2:putPixel(x, 0, 1)
+		mainBitmap2:putPixel(x + 1, 0, 0)
+	end
+
+	-- second row
+	-- 4 to 7
+	-- all 0200
+	for x = 0, 10 - 1, 2 do
+		mainBitmap2:putPixel(x, 5, 0)
+		mainBitmap2:putPixel(x + 1, 5, 1)
+	end
+
+	-- third row
+	-- 8 to 11
+	-- all 0030
+	for x = 0, 10 - 1, 2 do
+		mainBitmap2:putPixel(x, 10, 1)
+		mainBitmap2:putPixel(x + 1, 10, 1)
+	end
+
+	-- fourth row
+	-- 12 to 15
+	-- all 0000
+	for x = 0, 10 - 1, 2 do
+		mainBitmap2:putPixel(x, 15, 0)
+		mainBitmap2:putPixel(x + 1, 15, 0)
+	end
+
+
+	local getBufferTest = function (bitmap)
+		return bitmap:getBuffer()
+	end
+
+	local tests = {
+		{"mainBitmap", getBufferTest, {mainBitmap}, [[
+⠉⠉⠉⠉⠉
+⠒⠒⠒⠒⠒
+⠤⠤⠤⠤⠤
+⣀⣀⣀⣀⣀
+]]}
+
+		,{"mainBitmap2", getBufferTest, {mainBitmap2}, [[
+⠁⠁⠁⠁⠁
+⠐⠐⠐⠐⠐
+⠤⠤⠤⠤⠤
+     
+]]}
+	}
+
+	if not doTests("Bitmap:getBuffer", tests) then
 		return false
 	else
 		return true
@@ -374,6 +469,8 @@ function Init()
 	if not testBitmapPutPixel() then return end
 
 	if not testBitmapMarshalRow() then return end
+
+	if not testBitmapGetBuffer() then return end
 
 	if not testBitmapDrawBorder() then return end
 end
