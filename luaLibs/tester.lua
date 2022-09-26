@@ -66,6 +66,7 @@ function doTests(testBlockDescription, testTable)
 	print("Test Section : " .. testBlockDescription)
 
 	for i = 1, #testTable do
+		io.stdout:write("	")
 		if not doTest(table.unpack(testTable[i])) then
 			return false
 		end
