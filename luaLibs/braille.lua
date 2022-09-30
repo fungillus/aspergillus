@@ -190,18 +190,7 @@ function Braille:draw()
 end
 
 function Braille:blit(bitmap, x, y)
-	local bitmapSize = bitmap:getSize()
-
-	local initialX = x
-
-	for h = 0, bitmapSize.height - 1 do
-		x = initialX
-		for w = 0, bitmapSize.width - 1 do
-			self:putPixel(x, y, bitmap:getPixel(w, h))
-			x = x + 1
-		end
-		y = y + 1
-	end
+	self:blitSection(bitmap, {x = x, y = y} or {x = 0, y = 0})
 end
 
 -- sourceRectangle is a table like so : {x=nil, y=nil, width=nil, height=nil} where nil values are expected to be actual values
