@@ -12,10 +12,10 @@ Bitmap:putPixel
 Bitmap:marshalRow
 Bitmap:getBuffer
 Bitmap:drawBorder
+Bitmap:blit
 
 Bitmap:clear
 Bitmap:draw
-Bitmap:blit
 Bitmap:blitSection
 Bitmap:blitReverse
 Bitmap:isRectangleEmpty
@@ -457,6 +457,207 @@ function testBitmapPutPixel()
 	end
 end
 
+function testBlit()
+	local blitTest = function (width, height, rawTextImage, blitX, blitY)
+		local mainBitmap = Bitmap:new(width, height)
+
+		local imgToBlit = convertRawTextToImage(rawTextImage)
+
+		mainBitmap:blit(imgToBlit, blitX, blitY)
+
+		return mainBitmap:getBuffer()
+	end
+
+	local tests = {
+		{"1", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 0, 0}, [[
+⣿         
+          
+          
+          
+          
+]]}
+		,{"2", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 1, 0}, [[
+⢸⡇        
+          
+          
+          
+          
+]]}
+		,{"3", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 1, 1}, [[
+⢰⡆        
+⠈⠁        
+          
+          
+          
+]]}
+		,{"4 half out of bound horizontally", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 19, 0}, [[
+         ⢸
+          
+          
+          
+          
+]]}
+		,{"5 totally out of bound horizontally", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 20, 0}, [[
+          
+          
+          
+          
+          
+]]}
+		,{"6 totally out of bound horizontally to the left", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], -2, 0}, [[
+          
+          
+          
+          
+          
+]]}
+		,{"5v2 totally out of bound vertically to the bottom", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 0, 20}, [[
+          
+          
+          
+          
+          
+]]}
+		,{"6v2 totally out of bound vertically to the top", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 0, -4}, [[
+          
+          
+          
+          
+          
+]]}
+		,{"7 half out of bound horizontally to the left", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], -1, 0}, [[
+⡇         
+          
+          
+          
+          
+]]}
+		,{"8 half out of bound vertically to the top", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 0, -2}, [[
+⠛         
+          
+          
+          
+          
+]]}
+		,{"9 half out of bound vertically in the bottom", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 0, 18}, [[
+          
+          
+          
+          
+⣤         
+]]}
+		,{"10 half out of bound in the bottom right corner", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 19, 18}, [[
+          
+          
+          
+          
+         ⢠
+]]}
+		,{"11 half out of bound in the top left corner", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], -1, -2}, [[
+⠃         
+          
+          
+          
+          
+]]}
+		,{"12 out of bound in the top left corner", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], -2, -4}, [[
+          
+          
+          
+          
+          
+]]}
+		,{"13 out of bound in the bottom right corner", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], 20, 20}, [[
+          
+          
+          
+          
+          
+]]}
+	}
+
+	if not doTests("Bitmap:blit", tests) then
+		return false
+	else
+		return true
+	end
+end
+
 function Init()
 	if not testConvRawUnicodeValueToUnicode() then return end
 
@@ -473,6 +674,8 @@ function Init()
 	if not testBitmapGetBuffer() then return end
 
 	if not testBitmapDrawBorder() then return end
+
+	if not testBlit() then return end
 end
 
 function Poll()
