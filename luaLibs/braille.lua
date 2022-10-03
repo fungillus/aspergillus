@@ -193,31 +193,64 @@ function Braille:blit(bitmap, x, y)
 	self:blitSection(bitmap, {x = x, y = y} or {x = 0, y = 0})
 end
 
--- sourceRectangle is a table like so : {x=nil, y=nil, width=nil, height=nil} where nil values are expected to be actual values
--- if the full bitmap is to be blit, just pass nil to it.
+-- destinationCoordinates is a table with x and y elements.
+-- sourceRectangle is a table like so : {x=nil, y=nil, width=nil, height=nil}
+-- 			where nil values are expected to be actual values
+-- 			if the full bitmap is to be blit, just pass nil to it.
 function Braille:blitSection(bitmap, destinationCoordinates, sourceRectangle)
 	local bitmapSize = bitmap:getSize()
+
+	if sourceRectangle == nil then
+		sourceRectangle = {x = 0, y = 0, width = bitmapSize.width, height = bitmapSize.height}
+	end
+
+	if destinationCoordinates == nil or destinationCoordinates.x == nil or destinationCoordinates.y == nil then
+		print("Please input a valid destinationCoordinates table")
+		return 1
+	end
+
+	if sourceRectangle.x == nil or sourceRectangle.y == nil
+		or sourceRectangle.width == nil or sourceRectangle.height == nil then
+		print("Source rectangle must be a table with entries : x, y, width and height")
+		return 1
+	end
+
 	local height = sourceRectangle.height
 	local width = sourceRectangle.width
-	if sourceRectangle.height > bitmapSize.height then
-		height = bitmapSize.height
+
+	if sourceRectangle.height > bitmapSize.height then height = bitmapSize.height end
+	if sourceRectangle.width > bitmapSize.width then width = bitmapSize.width end
+
+	-- note that these two checks are strictly for the source bitmap, not the destination at all
+	if sourceRectangle.x + sourceRectangle.width > bitmapSize.width
+		or sourceRectangle.x + sourceRectangle.width < 0 then
+		return 1
 	end
-	if sourceRectangle.width > bitmapSize.width then
-		width = bitmapSize.width
+	if sourceRectangle.y + sourceRectangle.height > bitmapSize.height
+		or sourceRectangle.y + sourceRectangle.height < 0 then
+		return 1
 	end
 
-	if sourceRectangle.x > bitmapSize.width or sourceRectangle.y > bitmapSize.height then
-		print("Invalid out of bounds source rectangle coordinates given")
-		return
+	if destinationCoordinates.x + sourceRectangle.width > self.width then
+		if destinationCoordinates.x < self.width then
+			width = self.width - destinationCoordinates.x
+		else
+			print("Out of bound destination coordinate, horizontally.")
+			return 1
+		end
 	end
 
-	if sourceRectangle.y + sourceRectangle.height > bitmapSize.height then
-		height = sourceRectangle.y + sourceRectangle.height - bitmapSize.height
+	if destinationCoordinates.y + sourceRectangle.height > self.height then
+		if destinationCoordinates.y < self.height then
+			height = self.height - destinationCoordinates.y
+		else
+			print("Out of bound destination coordinate, vertically.")
+			return 1
+		end
 	end
 
-	if sourceRectangle.x + sourceRectangle.width > bitmapSize.width then
-		width = sourceRectangle.x + sourceRectangle.width - bitmapSize.width
-	end
+	if width > self.width then return 1 end
+	if height > self.height then return 1 end
 
 	local initialX = destinationCoordinates.x
 	local x = 0
@@ -232,6 +265,8 @@ function Braille:blitSection(bitmap, destinationCoordinates, sourceRectangle)
 		end
 		y = y + 1
 	end
+
+	return 0
 end
 
 function Braille:blitReverse(bitmap, x, y)
