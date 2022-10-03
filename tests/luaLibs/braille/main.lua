@@ -13,10 +13,10 @@ Bitmap:marshalRow
 Bitmap:getBuffer
 Bitmap:drawBorder
 Bitmap:blit
+Bitmap:blitSection
 
 Bitmap:clear
 Bitmap:draw
-Bitmap:blitSection
 Bitmap:blitReverse
 Bitmap:isRectangleEmpty
 
@@ -658,6 +658,336 @@ function testBlit()
 	end
 end
 
+function testBlitSection()
+	local blitTest = function (width, height, rawTextImage, blitDest, sourceRectangle)
+		local mainBitmap = Bitmap:new(width, height)
+
+		local imgToBlit = convertRawTextToImage(rawTextImage)
+
+		local _result = mainBitmap:blitSection(imgToBlit, blitDest, sourceRectangle)
+
+		if _result == 0 then
+			return mainBitmap:getBuffer()
+		else
+			return false
+		end
+	end
+
+	local tests = {
+		{"simplest blit", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {x=0, y=0, width=2, height=4}}, [[
+⣿         
+          
+          
+          
+          
+]]}
+		,{"nil destinationCoordinates", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], nil, nil}, false}
+		,{"nil sourceRectangle", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}}, [[
+⣿         
+          
+          
+          
+          
+]]}
+		,{"sourceRectangle missing x", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {y=0, width=2, height=4}}, false}
+		,{"sourceRectangle missing y", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {x=0, width=2, height=4}}, false}
+
+		,{"sourceRectangle missing width", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {x=0, y=0, height=4}}, false}
+		,{"sourceRectangle missing height", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {x=0, y=0, width=2}}, false}
+		,{"source bitmap sourceRectangle horizontally out of bound", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {x=4, y=0, width=2, height=4}}, false}
+		,{"source bitmap sourceRectangle vertically out of bound", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {x=0, y=5, width=2, height=4}}, false}
+		,{"horizontally out of bound sourceRectangle", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {x=2, y=0, width=2, height=4}}, false}
+
+		,{"horizontally negative out of bound sourceRectangle", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {x=-3, y=0, width=2, height=4}}, false}
+		,{"vertically out of bound sourceRectangle", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {x=0, y=4, width=2, height=4}}, false}
+		,{"vertically negative out of bound sourceRectangle", blitTest, {20, 20, [[
+**
+**
+**
+**
+]], {x = 0, y = 0}, {x=0, y=-5, width=2, height=4}}, false}
+		,{"blit whole bitmap", blitTest, {20, 20, [[
+******
+**  **
+**  **
+******
+]], {x = 0, y = 0}, {x=0, y=0, width=6, height=4}},[[
+⣿⣉⣿       
+          
+          
+          
+          
+]]}
+		,{"blit top left part bitmap", blitTest, {20, 20, [[
+******
+**  **
+**  **
+******
+]], {x = 0, y = 0}, {x=0, y=0, width=3, height=2}},[[
+⠛⠁        
+          
+          
+          
+          
+]]}
+		,{"blit bottom left part bitmap", blitTest, {20, 20, [[
+******
+**  **
+**  **
+******
+]], {x = 0, y = 0}, {x=0, y=2, width=3, height=2}},[[
+⠛⠂        
+          
+          
+          
+          
+]]}
+		,{"blit top right part bitmap", blitTest, {20, 20, [[
+******
+**  **
+**  **
+******
+]], {x = 0, y = 0}, {x=3, y=0, width=3, height=2}},[[
+⠙⠃        
+          
+          
+          
+          
+]]}
+		,{"blit bottom right part bitmap", blitTest, {20, 20, [[
+******
+**  **
+**  **
+******
+]], {x = 0, y = 0}, {x=3, y=2, width=3, height=2}},[[
+⠚⠃        
+          
+          
+          
+          
+]]}
+		,{"blit middle part bitmap", blitTest, {20, 20, [[
+******
+**  **
+**  **
+******
+]], {x = 0, y = 0}, {x=1, y=1, width=4, height=2}},[[
+⠃⠘        
+          
+          
+          
+          
+]]}
+		,{"blit part of a big bitmap vertically", blitTest, {20, 20, [[
+          
+          
+          
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*   **    
+*  * *    
+* *  *    
+**   *    
+          
+          
+]], {x = 0, y = 0}, {x=0, y=20, width=6, height=4}},[[
+⣇⠔⢹       
+          
+          
+          
+          
+]]}
+		,{"blit part of a big bitmap horizontally", blitTest, {20, 20, [[
+          
+                                                            *   **    
+                                                            *  * *    
+                                                            * *  *    
+                                                            **   *    
+          
+          
+]], {x = 0, y = 0}, {x=60, y=1, width=6, height=4}},[[
+⣇⠔⢹       
+          
+          
+          
+          
+]]}
+		,{"blit bigger than destination bitmap horizontally", blitTest, {20, 20, [[
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+]], {x = 0, y = 0}, {x=0, y=0, width=40, height=4}}, [[
+⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕
+          
+          
+          
+          
+]]}
+	,{"blit bigger than destination bitmap vertically", blitTest, {20, 20, [[
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+]], {x = 0, y = 0}, {x=0, y=0, width=2, height=40}}, [[
+⢕         
+⢕         
+⢕         
+⢕         
+⢕         
+]]}
+	}
+
+	if not doTests("Bitmap:blitSection", tests) then
+		return false
+	else
+		return true
+	end
+end
+
 function Init()
 	if not testConvRawUnicodeValueToUnicode() then return end
 
@@ -676,6 +1006,8 @@ function Init()
 	if not testBitmapDrawBorder() then return end
 
 	if not testBlit() then return end
+
+	if not testBlitSection() then return end
 end
 
 function Poll()
