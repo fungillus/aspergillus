@@ -190,98 +190,102 @@ joystick_Poll(JsState *state) {
 	if (err <= 0)
 		return;
 
-	result = fread(&joystickEvent, sizeof(struct js_event), 1, state->joystickFd);
+	while (1) {
+		result = fread(&joystickEvent, sizeof(struct js_event), 1, state->joystickFd);
 
-	if (debugging) {
-		showEvent(&joystickEvent);
-	}
-
-	if (result > 0) {
-		if (joystickEvent.type == 1) {
-			switch (joystickEvent.number) {
-				case 0: /* Button A */
-				{
-					state->statusBits = updateBits(state->statusBits, kButtonA, joystickEvent.value);
-					break;
-				}
-
-				case 2: /* Button B */
-				{
-					state->statusBits = updateBits(state->statusBits, kButtonB, joystickEvent.value);
-					break;
-				}
-
-				case 9: /* D-pad up */
-				{
-					state->statusBits = updateBits(state->statusBits, kButtonUp, joystickEvent.value);
-					break;
-				}
-
-				case 10: /* D-pad down */
-				{
-					state->statusBits = updateBits(state->statusBits, kButtonDown, joystickEvent.value);
-					break;
-				}
-
-				case 11: /* D-pad left */
-				{
-					state->statusBits = updateBits(state->statusBits, kButtonLeft, joystickEvent.value);
-					break;
-				}
-
-				case 12: /* D-pad right */
-				{
-					state->statusBits = updateBits(state->statusBits, kButtonRight, joystickEvent.value);
-					break;
-				}
-				
-				default:
-				{
-					if (debugging)
-						fprintf(stderr, "Unhandled event : %d\n", joystickEvent.number);
-					break;
-				}
+		if (result <= 0) {
+			break;
+		} else if (result > 0) {
+			if (debugging) {
+				showEvent(&joystickEvent);
 			}
-		} else if (joystickEvent.type == 2) {
-			switch (joystickEvent.number) {
-				case 6: /* D-Pad horizontal */
-				{
-					if (joystickEvent.value <= -1) { /* left */
-						state->statusBits = updateBits(state->statusBits, kButtonLeft, 1);
-					} else if (joystickEvent.value >= 1) { /* right */
-						state->statusBits = updateBits(state->statusBits, kButtonRight, 1);
-					} else if (joystickEvent.value == 0) {
-						state->statusBits = updateBits(state->statusBits, kButtonLeft, 0);
-						state->statusBits = updateBits(state->statusBits, kButtonRight, 0);
-					}
-					break;
-				}
 
-				case 7: /* D-Pad vertical */
-				{
-					if (joystickEvent.value <= -1) { /* left */
-						state->statusBits = updateBits(state->statusBits, kButtonUp, 1);
-					} else if (joystickEvent.value >= 1) { /* right */
-						state->statusBits = updateBits(state->statusBits, kButtonDown, 1);
-					} else if (joystickEvent.value == 0) {
-						state->statusBits = updateBits(state->statusBits, kButtonUp, 0);
-						state->statusBits = updateBits(state->statusBits, kButtonDown, 0);
+			if (joystickEvent.type == 1) {
+				switch (joystickEvent.number) {
+					case 0: /* Button A */
+					{
+						state->statusBits = updateBits(state->statusBits, kButtonA, joystickEvent.value);
+						break;
 					}
-					break;
-				}
 
-				default:
-				{
-					if (debugging)
-						fprintf(stderr, "Unhandled event : %d value : %d \n", joystickEvent.number, joystickEvent.value);
-					break;
+					case 2: /* Button B */
+					{
+						state->statusBits = updateBits(state->statusBits, kButtonB, joystickEvent.value);
+						break;
+					}
+
+					case 9: /* D-pad up */
+					{
+						state->statusBits = updateBits(state->statusBits, kButtonUp, joystickEvent.value);
+						break;
+					}
+
+					case 10: /* D-pad down */
+					{
+						state->statusBits = updateBits(state->statusBits, kButtonDown, joystickEvent.value);
+						break;
+					}
+
+					case 11: /* D-pad left */
+					{
+						state->statusBits = updateBits(state->statusBits, kButtonLeft, joystickEvent.value);
+						break;
+					}
+
+					case 12: /* D-pad right */
+					{
+						state->statusBits = updateBits(state->statusBits, kButtonRight, joystickEvent.value);
+						break;
+					}
+
+					default:
+					{
+						if (debugging)
+							fprintf(stderr, "Unhandled event : %d\n", joystickEvent.number);
+						break;
+					}
 				}
+			} else if (joystickEvent.type == 2) {
+				switch (joystickEvent.number) {
+					case 6: /* D-Pad horizontal */
+					{
+						if (joystickEvent.value <= -1) { /* left */
+							state->statusBits = updateBits(state->statusBits, kButtonLeft, 1);
+						} else if (joystickEvent.value >= 1) { /* right */
+							state->statusBits = updateBits(state->statusBits, kButtonRight, 1);
+						} else if (joystickEvent.value == 0) {
+							state->statusBits = updateBits(state->statusBits, kButtonLeft, 0);
+							state->statusBits = updateBits(state->statusBits, kButtonRight, 0);
+						}
+						break;
+					}
+
+					case 7: /* D-Pad vertical */
+					{
+						if (joystickEvent.value <= -1) { /* left */
+							state->statusBits = updateBits(state->statusBits, kButtonUp, 1);
+						} else if (joystickEvent.value >= 1) { /* right */
+							state->statusBits = updateBits(state->statusBits, kButtonDown, 1);
+						} else if (joystickEvent.value == 0) {
+							state->statusBits = updateBits(state->statusBits, kButtonUp, 0);
+							state->statusBits = updateBits(state->statusBits, kButtonDown, 0);
+						}
+						break;
+					}
+
+					default:
+					{
+						if (debugging)
+							fprintf(stderr, "Unhandled event : %d value : %d \n", joystickEvent.number, joystickEvent.value);
+						break;
+					}
+				}
+			} else {
+				if (debugging)
+					fprintf(stderr, "Unhandled type : %d event : %d\n", joystickEvent.type, joystickEvent.number);
 			}
-		} else {
-			if (debugging)
-				fprintf(stderr, "Unhandled type : %d event : %d\n", joystickEvent.type, joystickEvent.number);
+			/* showEvent(&joystickEvent); */
 		}
-		/* showEvent(&joystickEvent); */
 	}
 }
 
