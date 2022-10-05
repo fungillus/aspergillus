@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <linux/joystick.h>
+#include <fcntl.h>
 
 /*-------------------- Internal Header Includes --------------------*/
 #include "epoll.h"
@@ -140,6 +141,7 @@ openJoystickDevice(JsState *state) {
 		state->joystickFd = NULL;
 		return 1;
 	} else {
+		fcntl(fileno(fd), F_SETFL, O_NONBLOCK);
 		state->joystickFd = fd;
 		return 0;
 	}
