@@ -135,6 +135,18 @@ updateBits(int bits, int offset, int value) {
 }
 
 static int
+isFileExists(char *filePath) {
+	FILE *fd = fopen(filePath, "r");
+
+	if (!fd) {
+		return 0;
+	} else {
+		fclose(fd);
+		return 1;
+	}
+}
+
+static int
 openJoystickDevice(JsState *state) {
 	FILE *fd = fopen("/dev/input/js0", "rb");
 	if (!fd) {
@@ -177,6 +189,12 @@ joystick_Poll(JsState *state) {
 	struct js_event joystickEvent;
 	int result = 0;
 	int err = 0;
+
+	if (state->joystickFd != NULL && ! isFileExists("/dev/input/js0")) {
+		fclose(state->joystickFd);
+		state->joystickFd = NULL;
+		if (debugging) fprintf(stderr, "Joystick disappeared\n");
+	}
 
 	if (state->joystickFd == NULL) {
 		if (openJoystickDevice(state)) /* could not load the joystick device */
