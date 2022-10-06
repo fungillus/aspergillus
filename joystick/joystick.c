@@ -298,6 +298,12 @@ joystick_Poll(JsState *state) {
 						break;
 					}
 				}
+			} else if (joystickEvent.type == 129) {
+				/* this is just buttons capability reporting status */
+				;;
+			} else if (joystickEvent.type == 130) {
+				/* this is just absolute axis capability reporting status */
+				;;
 			} else {
 				if (debugging)
 					fprintf(stderr, "Unhandled type : %d event : %d\n", joystickEvent.type, joystickEvent.number);
