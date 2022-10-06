@@ -14,7 +14,7 @@ function Menu:new(drawContext, coordinate, menuEntries, o)
 	o.coordinate = {x = coordinate.x, y = coordinate.y} or {x = 0, y = 0}
 	o.currentPage = 0
 	o.alignment = "left"
-	o.buttonsPressTimeout = 20
+	o.buttonsPressTimeout = 5
 	o.buttonsPressNextTimeout = {}
 	o.arrowBitmaps = {}
 
