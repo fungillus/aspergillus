@@ -92,16 +92,16 @@ function Init()
 	exitSymbol2 = {}
 	for i, side in pairs({"up", "down"}) do exitSymbol2[side] = convertRawTextToImage(genPipe(6, 3, side)) end
 	for i, side in pairs({"right", "left"}) do exitSymbol2[side] = convertRawTextToImage(genPipe(3, 6, side)) end
-	exitSymbol2.up.offsetX = math.ceil(tileSize / 2 - exitSymbol2.up.width / 2)
-	exitSymbol2.up.offsetY = -math.floor(exitSymbol2.up.height / 2)
+	exitSymbol2.up.offsetX = math.ceil(tileSize / 2 - exitSymbol2.up:getSize().width / 2)
+	exitSymbol2.up.offsetY = -math.floor(exitSymbol2.up:getSize().height / 2)
 
 	exitSymbol2.down.offsetX = exitSymbol2.up.offsetX
-	exitSymbol2.down.offsetY = math.floor(tileSize - exitSymbol2.down.height / 2 + 1)
+	exitSymbol2.down.offsetY = math.floor(tileSize - exitSymbol2.down:getSize().height / 2 + 1)
 
-	exitSymbol2.right.offsetX = math.floor(tileSize - exitSymbol2.right.width / 2 + 1)
-	exitSymbol2.right.offsetY = math.ceil(tileSize / 2 - exitSymbol2.right.height / 2)
+	exitSymbol2.right.offsetX = math.floor(tileSize - exitSymbol2.right:getSize().width / 2 + 1)
+	exitSymbol2.right.offsetY = math.ceil(tileSize / 2 - exitSymbol2.right:getSize().height / 2)
 
-	exitSymbol2.left.offsetX = -math.ceil(exitSymbol2.left.width / 2 - 1)
+	exitSymbol2.left.offsetX = -math.ceil(exitSymbol2.left:getSize().width / 2 - 1)
 	exitSymbol2.left.offsetY = exitSymbol2.right.offsetY
 
 
