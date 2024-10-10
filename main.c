@@ -78,18 +78,19 @@ setCFunctions(lua_State *luaCtx) {
 
 static void
 callMockButtonsState(JsState *js, lua_State *luaCtx, int tick) {
-	lua_getglobal(luaCtx, "setMockButtonsState");
+	lua_pushvalue(luaCtx, -1); /* copy the saved setMockButtonsState to the top of the stack */
 	lua_pushinteger(luaCtx, tick);
 	if (lua_pcall(luaCtx, 1, 1, 0) != 0) {
 		/* printf("ERROR CALLING setMockButtonsState!!!\n"); */
 		return;
 	} else {
 		if (!lua_isinteger(luaCtx, -1)) {
-			printf("RESULT IS NOT AN INTEGER!!!\n");
+			fprintf(stderr, "RESULT IS NOT AN INTEGER!!! -> %d\n", lua_type(luaCtx, -1));
 		} else {
 			/* buttonsState = lua_tointeger(luaCtx, -1); */
 			joystick_SetButtonState(js, lua_tointeger(luaCtx, -1));
-			lua_pop(luaCtx, -1);
+			/* remove the returned value from the stack */
+			lua_pop(luaCtx, 1);
 		}
 	}
 }
@@ -134,7 +135,6 @@ int main(int argc, char **argv) {
 
 	if (luaL_dofile(luaCtx, luaGamePath) != 0) {
 		const char *msg = lua_tostring(luaCtx, -1);
-		lua_pop(luaCtx, -1);
 		printf("Error in the script file main.lua -> %s\n", msg);
 
 		joystick_Destroy(jsContext);
@@ -143,7 +143,30 @@ int main(int argc, char **argv) {
 	}
 
 	lua_getglobal(luaCtx, "Init");
-	lua_pcall(luaCtx, 0, 0, 0);
+	if (!lua_isfunction(luaCtx, -1)) {
+		fprintf(stderr, "Module is missing the 'Init' function.\n");
+		joystick_Destroy(jsContext);
+		lua_close(luaCtx);
+		return 1;
+	}
+	if (lua_pcall(luaCtx, 0, 0, 0)) {
+		const char *msg = lua_tostring(luaCtx, -1);
+		fprintf(stderr, "Init - Catched an error -> %s\n", msg);
+		joystick_Destroy(jsContext);
+		lua_close(luaCtx);
+		return 1;
+	}
+
+	/* Save the two function calls in the stack so we can call them later */
+	lua_getglobal(luaCtx, "Poll"); /* idx -2 */
+	lua_getglobal(luaCtx, "setMockButtonsState"); /* idx -1 */
+
+	/* check if what we loaded in the stack are really functions */
+	if (!lua_isfunction(luaCtx, -1) || !lua_isfunction(luaCtx, -2)) {
+		fprintf(stderr, "Module is missing either the 'Poll' function or the 'setMockButtonsState' function.\n");
+		lua_close(luaCtx);
+		return 1;
+	}
 
 	int idealCycleTime = (int)((double)1 / ((double)targetFramesPerSecond / 100.0));
 	int outstandingFreeTimeLeftThisTick = 0;
@@ -156,13 +179,20 @@ int main(int argc, char **argv) {
 		callMockButtonsState(jsContext, luaCtx, tick);
 
 		/* run the lua Poll function */
-		lua_getglobal(luaCtx, "Poll");
-		if (lua_pcall(luaCtx, 0, 0, 0) != 0) {
-			const char *msg = lua_tostring(luaCtx, -1);
-			lua_pop(luaCtx, -1);
-			fprintf(stderr, "Catched an error -> %s\n", msg);
+		lua_pushvalue(luaCtx, -2); /* copy the location of the Poll function to the top of the stack */
+
+		if (!lua_isfunction(luaCtx, -1)) {
+			fprintf(stderr, "Top of the stack should contain the 'Poll' function but it does not\n");
 			break;
 		}
+
+		if (lua_pcall(luaCtx, 0, 0, 0) != LUA_OK) {
+			const char *msg = lua_tostring(luaCtx, -1);
+			lua_pop(luaCtx, -1);
+			fprintf(stderr, "Poll - Catched an error -> %s\n", msg);
+			break;
+		}
+
 		pollDeltaTime = getTickCount() - pollStartTime;
 
 		outstandingFreeTimeLeftThisTick = idealCycleTime - pollDeltaTime;
