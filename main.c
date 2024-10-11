@@ -210,7 +210,6 @@ int main(int argc, char **argv) {
 			/* fprintf(stderr, "%d sleeping off excess frames - %d\n", getTickCount(), outstandingFreeTimeLeftThisTick);*/
 			/* usleep(outstandingFreeTimeLeftThisTick); */
 			while (outstandingFreeTimeLeftThisTick >= 5000) {
-				joystick_Poll(jsContext);
 				outstandingFreeTimeLeftThisTick -= 5000;
 				usleep(5000);
 			}

@@ -202,7 +202,7 @@ joystick_Poll(JsState *state) {
 	}
 
 	/* printf("awaiting for the pipe to be available\n"); */
-	err = Util_CheckPipeAvail(fileno(state->joystickFd), 0, 0, 30);
+	err = Util_CheckPipeAvail(fileno(state->joystickFd), 0, 0, 1);
 	if (debugging) fprintf(stderr, "joystick_Poll : %d epoll result is %d\n", getTickCount(), err);
 
 	if (err <= 0)
