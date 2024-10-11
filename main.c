@@ -162,8 +162,8 @@ int main(int argc, char **argv) {
 	lua_getglobal(luaCtx, "setMockButtonsState"); /* idx -1 */
 
 	/* check if what we loaded in the stack are really functions */
-	if (!lua_isfunction(luaCtx, -1) || !lua_isfunction(luaCtx, -2)) {
-		fprintf(stderr, "Module is missing either the 'Poll' function or the 'setMockButtonsState' function.\n");
+	if (!lua_isfunction(luaCtx, -2)) {
+		fprintf(stderr, "Module is missing the 'Poll' function.\n");
 		lua_close(luaCtx);
 		return 1;
 	}
@@ -176,7 +176,9 @@ int main(int argc, char **argv) {
 		pollStartTime = getTickCount();
 		/* handle input events */
 		joystick_Poll(jsContext);
-		callMockButtonsState(jsContext, luaCtx, tick);
+		if (lua_isfunction(luaCtx, -1)) {
+			callMockButtonsState(jsContext, luaCtx, tick);
+		}
 
 		/* run the lua Poll function */
 		lua_pushvalue(luaCtx, -2); /* copy the location of the Poll function to the top of the stack */
