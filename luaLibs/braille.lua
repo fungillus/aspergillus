@@ -198,11 +198,11 @@ function Braille:putPixel(x, y, pixel)
 		,function (hdr, b1, b2) return hdr, b1 ~ 0x02, b2 end -- position (2, 4)
 	}
 
-	local convertedCoord = ((x % 2) + 1 + (y % 4) * 2)
+	local innerCoord = ((x % 2) + 1 + (y % 4) * 2)
 	if value ~= nil and value ~= 0 then
-		self.data[coord] = string.pack("BBB", convChart[convertedCoord](string.unpack("BBB", value)))
+		self.data[coord] = string.pack("BBB", convChart[innerCoord](string.unpack("BBB", value)))
 	else
-		self.data[coord] = string.pack("BBB", convChart[convertedCoord](0xe2, 0xa0, 0x80)) -- empty unicode braille character
+		self.data[coord] = string.pack("BBB", convChart[innerCoord](0xe2, 0xa0, 0x80)) -- empty unicode braille character
 	end
 end
 
