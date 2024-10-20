@@ -10,7 +10,7 @@ convBrailleToUnicode
 Bitmap:getPixel
 Bitmap:putPixel
 Bitmap:marshalRow
-Bitmap:getBuffer
+Bitmap:renderToString
 Bitmap:drawBorder
 Bitmap:blit
 Bitmap:blitSection
@@ -73,35 +73,11 @@ end
 function testBitmapMarshalRow()
 	local mainBitmap = Bitmap:new(10, 16)
 
-	-- first row 
-	-- 0 to 3
-	-- all 3000
-	for x = 0, 10 - 1 do
-		mainBitmap:putPixel(x, 0, 1)
+	for y = 0, 15, 5 do
+		for x = 0, 10 - 1 do
+			mainBitmap:putPixel(x, y, 1)
+		end
 	end
-
-	-- second row
-	-- 4 to 7
-	-- all 0300
-	for x = 0, 10 - 1 do
-		mainBitmap:putPixel(x, 5, 1)
-	end
-
-	-- third row
-	-- 8 to 11
-	-- all 0030
-	for x = 0, 10 - 1 do
-		mainBitmap:putPixel(x, 10, 1)
-	end
-
-	-- fourth row
-	-- 12 to 15
-	-- all 0003
-	for x = 0, 10 - 1 do
-		mainBitmap:putPixel(x, 15, 1)
-	end
-
-
 
 	local mainBitmap2 = Bitmap:new(10, 16)
 
@@ -170,7 +146,7 @@ function testBitmapMarshalRow()
 	end
 end
 
-function testBitmapGetBuffer()
+function testBitmapRenderToString()
 	local mainBitmap = Bitmap:new(10, 16)
 
 	-- first row 
@@ -238,19 +214,19 @@ function testBitmapGetBuffer()
 	end
 
 
-	local getBufferTest = function (bitmap)
-		return bitmap:getBuffer()
+	local renderToStringTest = function (bitmap)
+		return bitmap:renderToString()
 	end
 
 	local tests = {
-		{"mainBitmap", getBufferTest, {mainBitmap}, [[
+		{"mainBitmap", renderToStringTest, {mainBitmap}, [[
 ⠉⠉⠉⠉⠉
 ⠒⠒⠒⠒⠒
 ⠤⠤⠤⠤⠤
 ⣀⣀⣀⣀⣀
 ]]}
 
-		,{"mainBitmap2", getBufferTest, {mainBitmap2}, [[
+		,{"mainBitmap2", renderToStringTest, {mainBitmap2}, [[
 ⠁⠁⠁⠁⠁
 ⠐⠐⠐⠐⠐
 ⠤⠤⠤⠤⠤
@@ -258,7 +234,7 @@ function testBitmapGetBuffer()
 ]]}
 	}
 
-	if not doTests("Bitmap:getBuffer", tests) then
+	if not doTests("Bitmap:renderToString", tests) then
 		return false
 	else
 		return true
@@ -271,7 +247,7 @@ function testBitmapDrawBorder()
 
 		bmp:drawBorder(borderThickness)
 
-		return bmp:getBuffer()
+		return bmp:renderToString()
 	end
 
 	-- Bitmap:drawBorder
@@ -349,44 +325,44 @@ function testBitmapGetPixel()
 
 	local BitmapGetPixelTests = {}
 
-	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x1000", 2, 4, {0x1000}, {x=0, y=0})
-	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x2000", 2, 4, {0x2000}, {x=1, y=0})
-	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0100", 2, 4, {0x0100}, {x=0, y=1})
-	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0200", 2, 4, {0x0200}, {x=1, y=1})
-	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0010", 2, 4, {0x0010}, {x=0, y=2})
-	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0020", 2, 4, {0x0020}, {x=1, y=2})
-	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0001", 2, 4, {0x0001}, {x=0, y=3})
-	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0002", 2, 4, {0x0002}, {x=1, y=3})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x1000", 2, 4, {"⠁"}, {x=0, y=0})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x2000", 2, 4, {"⠈"}, {x=1, y=0})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0100", 2, 4, {"⠂"}, {x=0, y=1})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0200", 2, 4, {"⠐"}, {x=1, y=1})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0010", 2, 4, {"⠄"}, {x=0, y=2})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0020", 2, 4, {"⠠"}, {x=1, y=2})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0001", 2, 4, {"⡀"}, {x=0, y=3})
+	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 2x4 0x0002", 2, 4, {"⢀"}, {x=1, y=3})
 
 	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x1000", 4, 8,
-		{0x0000, 0x0000, 0x0000, 0x1000}, {x=2, y=4})
+		{0, 0, 0, "⠁"}, {x=2, y=4})
 	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x2000", 4, 8,
-		{0x0000, 0x0000, 0x0000, 0x2000}, {x=3, y=4})
+		{0, 0, 0, "⠈"}, {x=3, y=4})
 	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0100", 4, 8,
-		{0x0000, 0x0000, 0x0000, 0x0100}, {x=2, y=5})
+		{0, 0, 0, "⠂"}, {x=2, y=5})
 	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0200", 4, 8,
-		{0x0000, 0x0000, 0x0000, 0x0200}, {x=3, y=5})
+		{0, 0, 0, "⠐"}, {x=3, y=5})
 	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0010", 4, 8,
-		{0x0000, 0x0000, 0x0000, 0x0010}, {x=2, y=6})
+		{0, 0, 0, "⠄"}, {x=2, y=6})
 	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0020", 4, 8,
-		{0x0000, 0x0000, 0x0000, 0x0020}, {x=3, y=6})
+		{0, 0, 0, "⠠"}, {x=3, y=6})
 	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0001", 4, 8,
-		{0x0000, 0x0000, 0x0000, 0x0001}, {x=2, y=7})
+		{0, 0, 0, "⡀"}, {x=2, y=7})
 	injectGetPixelTests(BitmapGetPixelTests, "braille pixel 4x8 0x0002", 4, 8,
-		{0x0000, 0x0000, 0x0000, 0x0002}, {x=3, y=7})
+		{0, 0, 0, "⢀"}, {x=3, y=7})
 
 	table.insert(BitmapGetPixelTests, {"on nil dataBuffer", bitmapGetPixel, {0, 0, 2, 4, {}}, 0})
-	table.insert(BitmapGetPixelTests, {"spot check 1", bitmapGetPixel, {0, 0, 2, 4, {0x2013}}, 0})
-	table.insert(BitmapGetPixelTests, {"spot check 2", bitmapGetPixel, {1, 0, 2, 4, {0x2013}}, 1})
-	table.insert(BitmapGetPixelTests, {"spot check 3", bitmapGetPixel, {0, 1, 2, 4, {0x2013}}, 0})
-	table.insert(BitmapGetPixelTests, {"spot check 4", bitmapGetPixel, {0, 2, 2, 4, {0x2013}}, 1})
-	table.insert(BitmapGetPixelTests, {"spot check 5", bitmapGetPixel, {0, 3, 2, 4, {0x2013}}, 1})
-	table.insert(BitmapGetPixelTests, {"spot check 6", bitmapGetPixel, {1, 3, 2, 4, {0x2013}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 1", bitmapGetPixel, {0, 0, 2, 4, {"⣌"}}, 0})
+	table.insert(BitmapGetPixelTests, {"spot check 2", bitmapGetPixel, {1, 0, 2, 4, {"⣌"}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 3", bitmapGetPixel, {0, 1, 2, 4, {"⣌"}}, 0})
+	table.insert(BitmapGetPixelTests, {"spot check 4", bitmapGetPixel, {0, 2, 2, 4, {"⣌"}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 5", bitmapGetPixel, {0, 3, 2, 4, {"⣌"}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 6", bitmapGetPixel, {1, 3, 2, 4, {"⣌"}}, 1})
 
-	table.insert(BitmapGetPixelTests, {"spot check 7", bitmapGetPixel, {3, 5, 4, 8, {0x2013, 0x0000, 0x3100, 0x0031}}, 0})
-	table.insert(BitmapGetPixelTests, {"spot check 8", bitmapGetPixel, {3, 6, 4, 8, {0x2013, 0x0000, 0x3100, 0x0031}}, 1})
-	table.insert(BitmapGetPixelTests, {"spot check 9", bitmapGetPixel, {2, 6, 4, 8, {0x2013, 0x0000, 0x3100, 0x0031}}, 1})
-	table.insert(BitmapGetPixelTests, {"spot check 10", bitmapGetPixel, {1, 6, 4, 8, {0x2013, 0x0000, 0x3100, 0x0031}}, 0})
+	table.insert(BitmapGetPixelTests, {"spot check 7", bitmapGetPixel, {3, 5, 4, 8, {"⣌", 0, "⠋", "⡤"}}, 0})
+	table.insert(BitmapGetPixelTests, {"spot check 8", bitmapGetPixel, {3, 6, 4, 8, {"⣌", 0, "⠋", "⡤"}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 9", bitmapGetPixel, {2, 6, 4, 8, {"⣌", 0, "⠋", "⡤"}}, 1})
+	table.insert(BitmapGetPixelTests, {"spot check 10", bitmapGetPixel, {1, 6, 4, 8, {"⣌", 0, "⠋", "⡤"}}, 0})
 
 	if not doTests("Bitmap:getPixel", BitmapGetPixelTests) then
 		return false
@@ -465,7 +441,7 @@ function testBlit()
 
 		mainBitmap:blit(imgToBlit, blitX, blitY)
 
-		return mainBitmap:getBuffer()
+		return mainBitmap:renderToString()
 	end
 
 	local tests = {
@@ -667,7 +643,7 @@ function testBlitSection()
 		local _result = mainBitmap:blitSection(imgToBlit, blitDest, sourceRectangle)
 
 		if _result == 0 then
-			return mainBitmap:getBuffer()
+			return mainBitmap:renderToString()
 		else
 			return false
 		end
@@ -1001,7 +977,7 @@ function Init()
 
 	if not testBitmapMarshalRow() then return end
 
-	if not testBitmapGetBuffer() then return end
+	if not testBitmapRenderToString() then return end
 
 	if not testBitmapDrawBorder() then return end
 
