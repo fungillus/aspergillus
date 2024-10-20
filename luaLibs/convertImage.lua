@@ -1,137 +1,50 @@
-require("tester")
-
 require("debug")
 
 require("basic2")
 
-function packPixels(value1, value2)
-	if value1 == " " then
-		if value2 == " " then
-			return 0
-		else
-			return 2
-		end
-	else
-		if value2 == " " then
-			return 1
-		else
-			return 3
-		end
-	end
-end
+function convertRawTextToImage(rawText)
+	local height = 0
+	local width = 0
+	local i = 0
+	local x = 0
+	local y = 0
 
-function convertRawTextToBraille(rawText)
-	local last = nil
-	local buffer={{}}
-	local bufferRowIndex=1
-	local bufferColIndex=1
+	-- figure out how big the output bitmap will have to be
 	for c in rawText:gmatch(".") do
 		if c == "\n" then
-			if last ~= nil then
-				buffer[bufferRowIndex][bufferColIndex] = packPixels(last, " ")
-				last = nil
+			if i > width then
+				width = i
 			end
-			bufferRowIndex = bufferRowIndex + 1
-			bufferColIndex = 1
-			buffer[bufferRowIndex] = {}
+			height = height + 1
+			i = 0
 		else
-			if last == nil then
-				last = c
-			else
-				--print(packPixels(last, c))
-				buffer[bufferRowIndex][bufferColIndex] = packPixels(last, c)
-				last = nil
-				bufferColIndex = bufferColIndex + 1
-			end
-		end
-	end
-	-- we remove the last entry as it is empty
-	buffer[#buffer] = nil
-
-	local height = #buffer
-	--print("height :", height)
-	local maxWidth = 0
-	for i, v in pairs(buffer) do
-		maxWidth = math.max(maxWidth, #v)
-	end
-	local width = maxWidth * 2
-	--print("width :", width)
-
-	local dataResult = {}
-	for i = 1, #buffer, 4 do
-		for t = 1, maxWidth do
-			--[[
-			local first = buffer[i] and buffer[i][t] or 0
-			local second = buffer[i + 1]
-			local third = buffer[i + 2]
-			local fourth = buffer[i + 3]
-			--]]
-			local pixelResult = string.format("0x%d%d%d%d"
-				, buffer[i] and buffer[i][t] or 0
-				, buffer[i + 1] and buffer[i + 1][t] or 0
-				, buffer[i + 2] and buffer[i + 2][t] or 0
-				, buffer[i + 3] and buffer[i + 3][t] or 0)
-			--print("inserting : ", pixelResult)
-			--table.insert(dataResult, pixelResult)
-			table.insert(dataResult, tonumber(pixelResult))
+			i = i + 1
 		end
 	end
 
-	return {width=width, height=height, data=dataResult}
-end
+	local result = Bitmap:new(width, height)
 
-function convertBrailleToImage(braille)
-	local result = Bitmap:new(braille.width, braille.height)
-	result.core.data = braille.data
+	for c in rawText:gmatch(".") do
+		if c == "\n" then
+			y = y + 1
+			x = 0
+		elseif c ~= " " then
+			result:putPixel(x, y, 1)
+			x = x + 1
+		else
+			result:putPixel(x, y, 0)
+			x = x + 1
+		end
+	end
+
 	return result
 end
 
-function convertRawTextToImage(rawText)
-	return convertBrailleToImage(convertRawTextToBraille(rawText))
-end
-
-function testConvertImage()
-	testCases = {
-		{"letter A", convertRawTextToBraille, {[[
-  **
- *  *
-******
-*    *
-*    *
- 
- 
- 
-]]}, {width=6, height=8, data={0x0231, 0x3030, 0x0132, 0x1000, 0, 0x2000}}}
-
-		,{"letter B", convertRawTextToBraille, {[[
-**** 
-*   *
-**** 
-*   *
-**** 
-     
-     
-     
-]]}, {width=6, height=8, data={0x3131, 0x3030, 0x0101, 0x3000, 0x3000, 0}}}
-
-		,{"letter C", convertRawTextToBraille, {[[
- *** 
-*   *
-*    
-*   *
- *** 
-     
-     
-     
-]]}, {width=6, height=8, data={0x2111, 0x3000, 0x0101, 0x2000, 0x3000, 0}}}
-}
-
-	doTests("Letters Conversion", testCases)
-end
 
 -- check if this script is being run directly with 'lua'
 if debug.getinfo(3) == nil then
-	--testConvertImage()
+
+	require("braille")
 
 	inputFile=arg[1] or "sampleImage.txt"
 
@@ -144,17 +57,27 @@ if debug.getinfo(3) == nil then
 	if not f then
 		print("Error opening file :", inputFile)
 	else
-		local buf = f:read("a")
-		local resultBrailleImage = convertRawTextToBraille(buf)
 		local isFirst = true
-		io.write("{", "width=", resultBrailleImage.width, ", height=", resultBrailleImage.height, ", data={")
-		for k, v in pairs(resultBrailleImage.data) do
+		local result = convertRawTextToImage(f:read("a"))
+		local size = result:getSize()
+		local realSize = result:getRealSize()
+		local i = 0
+
+		local buffer = result:getBuffer()
+		io.write("{width=", size.width, ", height=", size.height, ", data={")
+		for i = 1, realSize.width * realSize.height do
 			if isFirst then
 				isFirst = false
 			else
 				io.write(",")
 			end
-			io.write(v)
+			if not buffer[i] then
+				io.write("0")
+			else
+				io.write("\"")
+				io.write(buffer[i])
+				io.write("\"")
+			end
 		end
 		print("}}")
 		f:close()
