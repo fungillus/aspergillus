@@ -73,8 +73,8 @@ function Braille:new(width, height, o)
 	o = o or {}
 	o.width = width
 	o.height = height
-	o.realWidth = math.floor(width / 2)
-	o.realHeight = math.floor(height / 4)
+	o.realWidth = math.ceil(width / 2)
+	o.realHeight = math.ceil(height / 4)
 	o.data = {}
 	setmetatable(o, self)
 	self.__index = self
