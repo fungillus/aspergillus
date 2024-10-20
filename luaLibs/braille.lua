@@ -248,6 +248,17 @@ function Braille:getBuffer()
 	return self.data
 end
 
+function Braille:renderToString()
+	local height = self.realHeight
+	local result = ""
+
+	for h = 0, height - 1 do
+		result = result .. self:marshalRow(h) .. "\n"
+	end
+
+	return result
+end
+
 function Braille:draw()
 	local height = self.realHeight
 

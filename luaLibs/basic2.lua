@@ -35,6 +35,10 @@ function Bitmap:getBuffer()
 	return self.core:getBuffer()
 end
 
+function Bitmap:renderToString()
+	return self.core:renderToString()
+end
+
 function Bitmap:blit(bitmap, x, y)
 	return self.core:blit(bitmap, x, y)
 end
