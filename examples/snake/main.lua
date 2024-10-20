@@ -23,15 +23,13 @@ function Apple:new(bitmapParent, positionX, positionY, o)
 	o.bitmapParent = bitmapParent
 
 	o.position = {positionX, positionY}
-	o.bitmap = Bitmap:new(4, 4)
 
-	--    
-	-- ** 
-	-- ** 
-	--    
-	o.bitmap.core.data = {
-		0x0220, 0x0110
-	}
+	o.bitmap = convertRawTextToImage([[
+
+ **
+ **
+
+]])
 
 	setmetatable(o, self)
 	self.__index = self
@@ -159,14 +157,12 @@ function Snake:new(bitmap, startX, startY, o)
 
 	o.bitmapParent = bitmap
 
-	o.bitmap = Bitmap:new(4, 4)
-	-- **
-	--****
-	--****
-	-- ** 
-	o.bitmap.core.data = {
-		0x2332, 0x1331
-	}
+	o.bitmap = convertRawTextToImage([[
+ **
+****
+****
+ **
+]])
 
 	o.tails = {}
 
@@ -349,7 +345,6 @@ function Init()
 	local fonts = Fonts:new()
 
 	local fps = Fps:new(function (text) fonts:printText(bitmap, {x=30, y=94}, text) end)
-	fps:togglePrint()
 	fps:setFpsCap(30)
 
 	gameState.bitmap = bitmap
