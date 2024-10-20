@@ -85,37 +85,90 @@ function Braille:clear()
 	self.data = {}
 end
 
+-- unicode braille is like so :
+--
+-- this is the first empty braille character : \u2800 -> 0xe2 0xa0 0x80
+-- 00
+-- 00
+-- 00
+-- 00
+--
+-- \u2801 -> 0xe2 0xa0 0x81 - position (1, 1)
+-- 10
+-- 00
+-- 00
+-- 00
+--
+-- \u2802 -> 0xe2 0xa0 0x82 - position (1, 2)
+-- 00
+-- 10
+-- 00
+-- 00
+--
+-- \u2804 -> 0xe2 0xa0 0x84 - position (1, 3)
+-- 00
+-- 00
+-- 10
+-- 00
+--
+-- \u2840 -> 0xe2 0xa1 0x80 - position (1, 4)
+-- 00
+-- 00
+-- 00
+-- 10
+--
+-- \u2808 -> 0xe2 0xa0 0x88 - position (2, 1)
+-- 01
+-- 00
+-- 00
+-- 00
+--
+-- \u2810 -> 0xe2 0xa0 0x90 - position (2, 2)
+-- 00
+-- 01
+-- 00
+-- 00
+--
+-- \u2820 -> 0xe2 0xa0 0xa0 - position (2, 3)
+-- 00
+-- 00
+-- 01
+-- 00
+--
+-- \u2880 -> 0xe2 0xa2 0x80 - position (2, 4)
+-- 00
+-- 00
+-- 00
+-- 01
+
 function Braille:getPixel(x, y)
 	local x1=math.floor(x / 2) + 1
 	local y1=math.floor(y / 4)
 	local coord=x1 + (y1 * self.realWidth)
 	local value=self.data[coord] or 0
 
-	-- coordinate system
-	--  01 23 45 67
-	--0 00 00 00 00
-	--1 00 00 00 00
-	--2 00 00 00 00
-	--3 00 00 00 00
-	
-	-- coord (3, 2) should give 6
-	-- coord (7, 2) should give 6
-	-- coord (7, 3) should give 8
+	if value == 0 or value == nil then
+		return 0
+	end
 
 	local convChart = { 
-		 function (e) return (e & 0x1000) >> 12 end
-		,function (e) return (e & 0x2000) >> 13 end
-		,function (e) return (e & 0x0100) >> 8 end
-		,function (e) return (e & 0x0200) >> 9 end
-		,function (e) return (e & 0x0010) >> 4 end
-		,function (e) return (e & 0x0020) >> 5 end
-		,function (e) return (e & 0x0001) end
-		,function (e) return (e & 0x0002) >> 1 end
+		 function (hdr, b1, b2) return (b2 & 0x01) == 0x01 end -- position (1, 1)
+		,function (hdr, b1, b2) return (b2 & 0x08) == 0x08 end -- position (2, 1)
+		,function (hdr, b1, b2) return (b2 & 0x02) == 0x02 end -- position (1, 2)
+		,function (hdr, b1, b2) return (b2 & 0x10) == 0x10 end -- position (2, 2)
+		,function (hdr, b1, b2) return (b2 & 0x04) == 0x04 end -- position (1, 3)
+		,function (hdr, b1, b2) return (b2 & 0x20) == 0x20 end -- position (2, 3)
+		,function (hdr, b1, b2) return (b1 & 0x01) == 0x01 end -- position (1, 4)
+		,function (hdr, b1, b2) return (b1 & 0x02) == 0x02 end -- position (2, 4)
 	}
 
 	local convertedCoord = ((x % 2) + 1 + (y % 4) * 2)
 
-	return convChart[convertedCoord](value)
+	if convChart[convertedCoord](string.unpack("BBB", value)) then
+		return 1
+	else
+		return 0
+	end
 end
 
 function Braille:putPixel(x, y, pixel)
@@ -124,7 +177,7 @@ function Braille:putPixel(x, y, pixel)
 	local coord=x1 + (y1 * self.realWidth)
 	local value=self.data[coord] or 0
 
-	if ( pixel >= 1) then
+	if (pixel >= 1) then
 		pixel = 1
 	else
 		pixel = 0
@@ -135,21 +188,25 @@ function Braille:putPixel(x, y, pixel)
 	end
 
 	local convChart = { 
-		  function (e) return e ~ 0x1000 end
-		 ,function (e) return e ~ 0x2000 end
-		 ,function (e) return e ~ 0x0100 end
-		 ,function (e) return e ~ 0x0200 end
-		 ,function (e) return e ~ 0x0010 end
-		 ,function (e) return e ~ 0x0020 end
-		 ,function (e) return e ~ 0x0001 end
-		 ,function (e) return e ~ 0x0002 end
+		 function (hdr, b1, b2) return hdr, b1, b2 ~ 0x01 end -- position (1, 1)
+		,function (hdr, b1, b2) return hdr, b1, b2 ~ 0x08 end -- position (2, 1)
+		,function (hdr, b1, b2) return hdr, b1, b2 ~ 0x02 end -- position (1, 2)
+		,function (hdr, b1, b2) return hdr, b1, b2 ~ 0x10 end -- position (2, 2)
+		,function (hdr, b1, b2) return hdr, b1, b2 ~ 0x04 end -- position (1, 3)
+		,function (hdr, b1, b2) return hdr, b1, b2 ~ 0x20 end -- position (2, 3)
+		,function (hdr, b1, b2) return hdr, b1 ~ 0x01, b2 end -- position (1, 4)
+		,function (hdr, b1, b2) return hdr, b1 ~ 0x02, b2 end -- position (2, 4)
 	}
 
 	local convertedCoord = ((x % 2) + 1 + (y % 4) * 2)
-	self.data[coord] = convChart[convertedCoord](value)
+	if value ~= nil and value ~= 0 then
+		self.data[coord] = string.pack("BBB", convChart[convertedCoord](string.unpack("BBB", value)))
+	else
+		self.data[coord] = string.pack("BBB", convChart[convertedCoord](0xe2, 0xa0, 0x80)) -- empty unicode braille character
+	end
 end
 
-function Braille:marshalRow(rowNumber)
+function Braille:marshalRowOld(rowNumber)
 	local width = self.realWidth
 
 	local result = ""
@@ -167,15 +224,28 @@ function Braille:marshalRow(rowNumber)
 	return result
 end
 
-function Braille:getBuffer()
-	local height = self.realHeight
-	local result = ""
+-- this version uses a technique without using string concatenation per loop
+-- cycle
+function Braille:marshalRow(rowNumber)
+	local width = self.realWidth
 
-	for h = 0, height - 1 do
-		result = result .. self:marshalRow(h) .. "\n"
+	local result = {}
+	local coord = rowNumber * width
+	local blockValue = 0
+	for w = 0, width - 1 do
+		coord = coord + 1
+		blockValue = self.data[coord]
+		if blockValue == nil or blockValue == 0 then
+			result[#result + 1] = " "
+		else
+			result[#result + 1] = blockValue
+		end
 	end
+	return table.concat(result)
+end
 
-	return result
+function Braille:getBuffer()
+	return self.data
 end
 
 function Braille:draw()
