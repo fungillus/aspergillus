@@ -36,6 +36,31 @@ function convBrailleToRawUnicodeValue(brailleNumber)
 	return 0x2800 + layer1A[digit1 + 1] + layer2A[digit2 + 1] + layer3A[digit3 + 1] + layer4A[digit4 + 1]
 end
 
+-- this function is for little-endian systems only
+-- this function could be converted into a pre-computed LUT
+--
+-- brailleNumber is a code value for the braille character.
+-- it is an hexadecimal number with four bytes, each representing
+-- a layer of the braille character.
+-- 0x0000 would be an empty braille character
+-- 0x1000 would be
+-- 10
+-- 00
+-- 00
+-- 00
+--
+-- I just realized that the brailleNumber as currently implemented with get and
+-- put Pixel could be made using just 2 bytes rather than the current 4 bytes.
+-- We currently use only 4 bits per byte but we could use 8 bits instead, which
+-- would save 2 bytes.
+--
+-- The current implementation saves the fourth row in : 0x0001 and 0x0002
+-- then the third row in : 0x0010 and 0x0020.
+--
+-- Instead, the fourth row could be : 0x01 and 0x02
+-- the third would be : 0x04 and 0x08
+-- the second : 0x10 and 0x20
+-- the first : 0x40 and 0x80
 function convBrailleToUnicode(brailleNumber)
 	local brailleLayers = {
 		{0x00, 0x01, 0x08, 0x09}
@@ -55,7 +80,7 @@ function convBrailleToUnicode(brailleNumber)
 	local b2=0xa0 + ((digit3 >> 2) & 0x3)
 	local b3=0x80 + ((digit3 & 0x3) << 4) + digit4
 
-	return string.format("%c%c%c", 0xe2, b2, b3)
+	return string.pack("BBB", 0xe2, b2, b3)
 end
 
 function fillLine(width, unicodeCharacter)
