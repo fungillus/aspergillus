@@ -2,16 +2,23 @@
 -- this is a private core driver, it should not be used directly
 
 require("console")
+require("extra")
 
 Braille = {width = nil, height = nil, realWidth = nil, realHeight = nil, data = nil}
 
 function Braille:new(width, height, o)
 	o = o or {}
+	if (width == -1 or height == -1) then
+		width, height = extra.getConsoleSize()
+		width = width * 2
+		height = height * 4
+	end
 	o.width = width
 	o.height = height
 	o.realWidth = math.ceil(width / 2)
 	o.realHeight = math.ceil(height / 4)
 	o.data = {}
+	o.pendings = {}
 	setmetatable(o, self)
 	self.__index = self
 	return o
@@ -77,6 +84,60 @@ end
 -- 00
 -- 01
 
+function blockValuePack1(fgColor, bgColor, header, b1, b2)
+	return string.pack("BBB", header, b1, b2)
+end
+
+-- defaults
+-- fgColor : 188 (gray)
+-- bgColor : 16 (black)
+function blockValuePack(fgColor, bgColor, header, b1, b2)
+	return string.pack("BBBBBBBc3BBBBBBBBc3BBBBBBBB"
+		-- the foreground color
+		,0x1b
+		,0x5b -- [
+		,0x33 -- 3
+		,0x38 -- 8
+		,0x3b -- ;
+		,0x35 -- 5
+		,0x3b -- ;
+		,string.format("%.3d", fgColor)
+		,0x6d -- m
+		-- the background color
+		,0x1b
+		,0x5b -- [
+		,0x34 -- 4
+		,0x38 -- 8
+		,0x3b -- ;
+		,0x35 -- 5
+		,0x3b -- ;
+		,string.format("%.3d", bgColor)
+		,0x6d -- m
+		-- the value of the block
+		,header
+		,b1
+		,b2
+		-- ansi escape reset
+		,0x1b
+		,0x5b -- [
+		,0x30 -- 0
+		,0x6d -- m
+		)
+end
+
+function blockValueUnpack(value)
+	local _, fgColor, _, _, bgColor, _, header, b1, b2 = string.unpack("c7c3Bc7c3BBBB", value)
+	return fgColor, bgColor, header, b1, b2
+end
+
+function blockValueUnpackValue(value)
+	local _, header, b1, b2 = string.unpack("c22BBB", value)
+	return header, b1, b2
+	
+	--local header, b1, b2 = string.unpack("BBB", value)
+	--return header, b1, b2
+end
+
 function Braille:getPixel(x, y)
 	local x1=math.floor(x / 2) + 1
 	local y1=math.floor(y / 4)
@@ -100,22 +161,42 @@ function Braille:getPixel(x, y)
 
 	local convertedCoord = ((x % 2) + 1 + (y % 4) * 2)
 
-	if convChart[convertedCoord](string.unpack("BBB", value)) then
+	--if convChart[convertedCoord](string.unpack("BBB", value)) then
+	if convChart[convertedCoord](blockValueUnpackValue(value)) then
 		return 1
 	else
 		return 0
 	end
 end
 
-function Braille:putPixel(x, y, pixel)
+function Braille:setBlockColor(x, y, fgColor, bgColor)
 	local x1=math.floor(x / 2) + 1
 	local y1=math.floor(y / 4)
 	local coord=x1 + (y1 * self.realWidth)
 	local value=self.data[coord] or 0
 
-	if (pixel >= 1) then
-		pixel = 1
+	if value ~= nil and value ~= 0 then
+		self.data[coord] = blockValuePack(fgColor, bgColor, blockValueUnpackValue(value))
 	else
+		self.data[coord] = blockValuePack(fgColor, bgColor, 0xe2, 0xa0, 0x80)
+	end
+	table.insert(self.pendings, {x=x1, y=y1, pixel=self.data[coord]})
+end
+
+function Braille:setColor(r, g, b)
+	return 1
+end
+
+-- FIXME validate the coordinate
+function Braille:putPixel(x, y, pixel)
+	local x1=math.floor(x / 2) + 1
+	local y1=math.floor(y / 4)
+	local coord=x1 + (y1 * self.realWidth)
+	local value=self.data[coord] or 0
+	local fgColor = 188 -- gray
+	local bgColor = 16 -- black
+
+	if not pixel then
 		pixel = 0
 	end
 
@@ -123,7 +204,7 @@ function Braille:putPixel(x, y, pixel)
 		return
 	end
 
-	local convChart = { 
+	local convChart = {
 		 function (hdr, b1, b2) return hdr, b1, b2 ~ 0x01 end -- position (1, 1)
 		,function (hdr, b1, b2) return hdr, b1, b2 ~ 0x08 end -- position (2, 1)
 		,function (hdr, b1, b2) return hdr, b1, b2 ~ 0x02 end -- position (1, 2)
@@ -136,28 +217,13 @@ function Braille:putPixel(x, y, pixel)
 
 	local innerCoord = ((x % 2) + 1 + (y % 4) * 2)
 	if value ~= nil and value ~= 0 then
-		self.data[coord] = string.pack("BBB", convChart[innerCoord](string.unpack("BBB", value)))
+		--self.data[coord] = string.pack("BBB", convChart[innerCoord](string.unpack("BBB", value)))
+		self.data[coord] = blockValuePack(fgColor, bgColor, convChart[innerCoord](blockValueUnpackValue(value)))
 	else
-		self.data[coord] = string.pack("BBB", convChart[innerCoord](0xe2, 0xa0, 0x80)) -- empty unicode braille character
+		--self.data[coord] = string.pack("BBB", convChart[innerCoord](0xe2, 0xa0, 0x80)) -- empty unicode braille character
+		self.data[coord] = blockValuePack(fgColor, bgColor, convChart[innerCoord](0xe2, 0xa0, 0x80))
 	end
-end
-
-function Braille:marshalRowOld(rowNumber)
-	local width = self.realWidth
-
-	local result = ""
-	local coord = rowNumber * width
-	local blockValue = 0
-	for w = 0, width - 1 do
-		coord = coord + 1
-		blockValue = self.data[coord]
-		if blockValue == nil or blockValue == 0 then
-			result = result .. " "
-		else
-			result = result .. convBrailleToUnicode(blockValue)
-		end
-	end
-	return result
+	table.insert(self.pendings, {x=x1, y=y1, pixel=self.data[coord]})
 end
 
 -- this version uses a technique without using string concatenation per loop
@@ -178,6 +244,7 @@ function Braille:marshalRow(rowNumber)
 		end
 	end
 	return table.concat(result)
+	--return console.foregroundColor(255, 0, 0, table.concat(result))
 end
 
 function Braille:getBuffer()
@@ -195,7 +262,7 @@ function Braille:renderToString()
 	return result
 end
 
-function Braille:draw()
+function Braille:drawAll()
 	local height = self.realHeight
 
 	for h = 0, height - 1 do
@@ -206,143 +273,37 @@ function Braille:draw()
 	io.flush()
 end
 
-function Braille:blit(bitmap, x, y)
-	self:blitSection(bitmap, {x = x, y = y} or {x = 0, y = 0})
+function Braille:drawPending()
+	local i, pending
+	for i = 1, #self.pendings do
+		pending = self.pendings[i]
+		console.moveCursor(pending.x, pending.y + 1)
+		io.write(pending.pixel)
+	end
+	console.moveCursor(self.realWidth, self.realHeight)
+	self.pendings = {}
+	io.flush()
 end
 
--- destinationCoordinates is a table with x and y elements.
--- sourceRectangle is a table like so : {x=nil, y=nil, width=nil, height=nil}
--- 			where nil values are expected to be actual values
--- 			if the full bitmap is to be blit, just pass nil to it.
-function Braille:blitSection(bitmap, destinationCoordinates, sourceRectangle)
-	local bitmapSize = bitmap:getSize()
-
-	if sourceRectangle == nil then
-		sourceRectangle = {x = 0, y = 0, width = bitmapSize.width, height = bitmapSize.height}
-	end
-
-	if destinationCoordinates == nil or destinationCoordinates.x == nil or destinationCoordinates.y == nil then
-		print("Please input a valid destinationCoordinates table")
-		return 1
-	end
-
-	if sourceRectangle.x == nil or sourceRectangle.y == nil
-		or sourceRectangle.width == nil or sourceRectangle.height == nil then
-		print("Source rectangle must be a table with entries : x, y, width and height")
-		return 1
-	end
-
-	local height = sourceRectangle.height
-	local width = sourceRectangle.width
-
-	if sourceRectangle.height > bitmapSize.height then height = bitmapSize.height end
-	if sourceRectangle.width > bitmapSize.width then width = bitmapSize.width end
-
-	-- note that these two checks are strictly for the source bitmap, not the destination at all
-	if sourceRectangle.x + sourceRectangle.width > bitmapSize.width
-		or sourceRectangle.x + sourceRectangle.width < 0 then
-		return 1
-	end
-	if sourceRectangle.y + sourceRectangle.height > bitmapSize.height
-		or sourceRectangle.y + sourceRectangle.height < 0 then
-		return 1
-	end
-
-	if destinationCoordinates.x + sourceRectangle.width > self.width then
-		if destinationCoordinates.x < self.width then
-			width = self.width - destinationCoordinates.x
-		else
-			print("Out of bound destination coordinate, horizontally.")
-			return 1
+-- redraw only rows that have changes, only once per row
+function Braille:drawPendingHybrid()
+	local doneRows = {}
+	local i, pending
+	for i = 1, #self.pendings do
+		pending = self.pendings[i]
+		if doneRows[pending.y] == nil then
+			doneRows[pending.y] = 1
+			console.moveCursor(1, pending.y)
+			io.write(self:marshalRow(pending.y))
 		end
 	end
-
-	if destinationCoordinates.y + sourceRectangle.height > self.height then
-		if destinationCoordinates.y < self.height then
-			height = self.height - destinationCoordinates.y
-		else
-			print("Out of bound destination coordinate, vertically.")
-			return 1
-		end
-	end
-
-	if width > self.width then return 1 end
-	if height > self.height then return 1 end
-
-	local initialX = destinationCoordinates.x
-	local x = 0
-	local y = destinationCoordinates.y
-
-	--print("blitSection", initialX, y, width, height, " bitmap height :", bitmapSize.height)
-	for h = sourceRectangle.y, sourceRectangle.y + height - 1 do
-		x = initialX
-		for w = sourceRectangle.x, sourceRectangle.x + width - 1 do
-			self:putPixel(x, y, bitmap:getPixel(w, h))
-			x = x + 1
-		end
-		y = y + 1
-	end
-
-	return 0
+	console.moveCursor(self.realWidth, self.realHeight)
+	self.pendings = {}
+	io.flush()
 end
 
-function Braille:blitReverse(bitmap, x, y)
-	local bitmapSize = bitmap:getSize()
-
-	local initialX = x
-	local pixel = 0
-
-	for h = 0, bitmapSize.height - 1 do
-		x = initialX
-		for w = 0, bitmapSize.width - 1 do
-			pixel = bitmap:getPixel(w, h)
-			if pixel == 1 then
-				pixel = 0
-			end
-			self:putPixel(x, y, pixel)
-			x = x + 1
-		end
-		y = y + 1
-	end
-end
-
-function Braille:isRectangleEmpty(startX, startY, width, height)
-	for y = startY, height + startY do
-		for x = startX, width + startX do
-			if self:getPixel(x, y) ~= 0 then
-				return false
-			end
-		end
-	end
-	return true
-end
-
-function Braille:drawBorder(borderSize)
-	-- up
-	for x = 0, self.width - 1 do
-		for y = 0, borderSize - 1 do
-			self:putPixel(x, y, 1)
-		end
-	end
-
-	-- down
-	for x = 0, self.width - 1 do
-		for y = self.height - borderSize, self.height do
-			self:putPixel(x, y, 1)
-		end
-	end
-
-	-- left
-	for x = 0, borderSize - 1 do
-		for y = 0, self.height - 1 do
-			self:putPixel(x, y, 1)
-		end
-	end
-
-	-- right
-	for x = self.width - borderSize, self.width do
-		for y = 0, self.height - 1 do
-			self:putPixel(x, y, 1)
-		end
-	end
+function Braille:draw()
+	self:drawPending()
+	--self:drawPendingHybrid()
+	--self:drawAll()
 end
