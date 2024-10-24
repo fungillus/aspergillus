@@ -8,9 +8,12 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#include <stdio.h> /* scanf */
+#include <stdio.h> /* fscanf */
 #include <sys/time.h> /* gettimeofday */
 #include <unistd.h> /* usleep write */
+#include <fcntl.h> /* fcntl */
+#include <errno.h>
+#include <sys/ioctl.h> /* ioctl */
 
 #include <termios.h> /* tcsetattr, tcgetattr, ICANON, ECHO, TCSANOW, struct termios */
 
@@ -22,9 +25,10 @@ getTickCount() {
 }
 
 void
-getConsoleSize(int *columnOut, int *rowOut) {
+getConsoleSize_old(int *columnOut, int *rowOut) {
 	struct termios initialSettings;
 	struct termios term;
+	int _err = 0;
 
 	tcgetattr(0, &initialSettings);
 	tcgetattr(0, &term);
@@ -36,11 +40,49 @@ getConsoleSize(int *columnOut, int *rowOut) {
 	write(1, "\033[9999;9999H", 12); /* place the cursor the farthest away */
 	write(1, "\033[6n", 4); /* get the cursor position which should be the screen size */
 
-	scanf("\x1b[%d;%dR", rowOut, columnOut); /* parse the cursor position result */
+	fcntl(0, F_SETFL, O_NONBLOCK);
+	int timeout = 0;
+
+	while (1) {
+		_err = fscanf(stdin, "\x1b[%d;%dR", rowOut, columnOut); /* parse the cursor position result */
+
+		if (_err > 0)
+			break;
+
+		if (errno != EAGAIN)
+			break;
+
+		if (errno == EAGAIN) {
+			if (timeout < 2000000) { /* 2 seconds timeout */
+				timeout += 500;
+			} else { /* time's up, we break */
+				break;
+			}
+		}
+
+		usleep(500);
+	}
+
+	if (_err < 0) {
+		*columnOut = 60;
+		*rowOut = 40;
+	}
 
 	tcsetattr(0, TCSANOW, &initialSettings);
 
 	write(1, "\033[u", 3); /* restore cursor position */
+}
+
+void
+getConsoleSize(int *columnOut, int *rowOut) {
+	struct winsize wsz;
+
+	*columnOut = 60;
+	*rowOut = 40;
+	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &wsz) != -1) {
+		*columnOut = wsz.ws_col;
+		*rowOut = wsz.ws_row;
+	}
 }
 
 static int
