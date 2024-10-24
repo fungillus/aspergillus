@@ -15,6 +15,7 @@ luaLibFiles = [
 	,'fps.lua'
 	,'animation.lua'
 	,'braille.lua'
+	,'fbdev.lua'
 	,'basic2.lua'
 	,'fonts.lua'
 	,'convertImage.lua'
