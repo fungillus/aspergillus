@@ -1,7 +1,10 @@
 console = {}
 
 function console.moveCursor(x, y)
-	print(string.format("\x1b[%d;%dH", y, x))
+	io.write(string.format("\x1b[%d;%dH", y, x))
+	-- just in case, we also use another ansi escape just to move the X axis
+	--print(string.pack("BBc3B", 0x1b, 0x5b, string.format("%0.3d", x), 0x47))
+	--io.write(string.format(""))
 end
 
 function console.clearScreen()
