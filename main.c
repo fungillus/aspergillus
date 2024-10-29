@@ -74,6 +74,12 @@ setCFunctions(lua_State *luaCtx) {
 	lua_setfield(luaCtx, -2, "kButtonA");
 
 	lua_setglobal(luaCtx, "buttons");
+
+	/* environment variables */
+	if (getenv("RUNGAME_VIDEO_BACKEND")) {
+		lua_pushstring(luaCtx, getenv("RUNGAME_VIDEO_BACKEND"));
+		lua_setglobal(luaCtx, "VIDEO_BACKEND");
+	}
 }
 
 static void
